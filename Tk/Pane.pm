@@ -409,7 +409,7 @@ Tk::Pane - A window panner
 
     use Tk::Pane;
 
-    $pane = $mw->Scrolled(Pane, Name => 'fred',
+    $pane = $mw->Scrolled("Pane", Name => 'fred',
 	-scrollbars => 'soe',
 	-sticky => 'we',
 	-gridded => 'y'
