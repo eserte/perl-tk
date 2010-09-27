@@ -80,6 +80,9 @@ sub try_configure
   {
    local $ENV{CC} = $Config{cc};
    local $ENV{CFLAGS} = "$Config{ccflags} $Config{cccdlflags}";
+   if ($^O eq 'darwin' && $ENV{CFLAGS} =~ m{-arch .*-arch }) { # multiple architectures not supported --- at least MacOSX is affected
+       $ENV{CFLAGS} =~ s{-arch \S+}{}g;
+   }
    system(sh => "./configure");
    open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
    print $fh <<'EOF';
