@@ -14,7 +14,7 @@ Tk::Text - Create and manipulate Text widgets
 
 =head1 SYNOPSIS
 
-B<text> $text ?I<options>?
+I<$text> = I<$parent>-E<gt>B<Text>(?I<options>?);
 
 B<-background>	B<-highlightbackground>	B<-insertontime>	B<-selectborderwidth>
 B<-borderwidth>	B<-highlightcolor>	B<-insertwidth>	B<-selectforeground>
