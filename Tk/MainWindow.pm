@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.014'; # was: sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.015'; # was: sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -17,8 +17,6 @@ require Tk::Toplevel;
 use Carp;
 
 $| = 1;
-
-my $pid = $$;
 
 my %Windows = ();
 
