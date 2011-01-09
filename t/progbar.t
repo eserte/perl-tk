@@ -1,6 +1,6 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
-use Test;
+use Test::More;
 use Tk;
 use Tk::widgets qw(ProgressBar);
 
@@ -12,20 +12,20 @@ $mw->geometry('+100+100');
 my $var = 0;
 
 my $pb  = $mw->ProgressBar(-bd => 3, -relief => 'raised', -fg => 'blue', -variable => \$var)->pack;
-ok(defined($pb),1,"Cannot create");
+ok defined($pb), "Create progress bar";
 
-ok(defined(tied($var)),1,"Variable not tied");
-ok($pb->cget('-from'),0,"Bad from");
-ok($pb->cget('-to'),100,"Bad to");
+ok defined(tied($var)), "Variable tied";
+is $pb->cget('-from'), 0, "from";
+is $pb->cget('-to'), 100, "to";
 
 for my $v (map(10*$_+3,1..10))
  {
   $var = $v;
-  ok($pb->cget('-value'),$v,"Value not $v");
-  ok($pb->value,$v,"Value not $v");
+  is $pb->cget('-value'), $v, "Value per cget is $v";
+  is $pb->value, $v, "Value per method is $v";
   $mw->update;
  }
 
 $mw->destroy;
-ok(defined(tied($var)),'',"Variable still tied");
+ok !defined(tied($var)), "Variable is not tied anymore";
 
