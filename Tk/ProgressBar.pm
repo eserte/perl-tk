@@ -1,7 +1,7 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '4.014'; # was: sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.015'; # was: sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk;
 use Tk::Canvas;
@@ -21,6 +21,10 @@ sub ClassInit {
     $mw->bind($class,'<Configure>', ['_layoutRequest',1]);
 }
 
+my $LAYOUT_REQUEST_NONE   = 0;
+my $LAYOUT_REQUEST_COLORS = 1;
+my $LAYOUT_REQUEST_VALUE  = 2;
+my $LAYOUT_REQUEST_GEOM   = 4;
 
 sub Populate {
     my($c,$args) = @_;
@@ -46,8 +50,24 @@ sub Populate {
 	-troughcolor
 		  => [PASSIVE => 'troughColor', 'Background', 'grey55'],
     );
-    _layoutRequest($c,1);
+    $c->_layoutRequest($LAYOUT_REQUEST_COLORS);
     $c->OnDestroy(['Destroyed' => $c]);
+}
+
+sub ConfigChanged {
+    my($c, $changed) = @_;
+    for my $k (qw(from to blocks padx pady gap colors resolution troughcolor)) {
+	if (exists $changed->{"-$k"}) {
+	    $c->_layoutRequest($LAYOUT_REQUEST_COLORS);
+	    last;
+	}
+    }
+    for my $k (qw(borderwidth length width)) {
+	if (exists $changed->{"-$k"}) {
+	    $c->_layoutRequest($LAYOUT_REQUEST_GEOM);
+	    last;
+	}
+    }
 }
 
 sub anchor {
@@ -91,7 +111,7 @@ sub _arrange {
 
     my($minv,$maxv) = $from < $to ? ($from,$to) : ($to,$from);
 
-    if($w == 1 && $h == 1) {
+    if(($w == 1 && $h == 1) || ($why & $LAYOUT_REQUEST_GEOM)) {
 	my $bw = $c->cget('-borderwidth');
 	my $defw = 10 + $y*2 + $bw *2;
 	my $defl = ($maxv - $minv) + $x*2 + $bw*2;
@@ -101,7 +121,6 @@ sub _arrange {
 
 	($w,$h) = ($h,$w) if $horz;
 	$c->GeometryRequest($w,$h);
-	$c->parent->update;
 	$c->update;
 
 	$w = $c->Width;
@@ -128,7 +147,7 @@ sub _arrange {
 	$gap = 0;
     }
 
-    if($why & 1) {
+    if($why & $LAYOUT_REQUEST_COLORS) {
 	my $colors = $c->{Configure}{'-colors'} || [];
 	my $bdir = $from < $to ? $dir : 0 - $dir;
 
@@ -289,7 +308,7 @@ sub value {
     if(@_) {
 	my $value = shift;
 	$$val = defined($value) ? $value : $c->{Configure}{'-from'};
-	_layoutRequest($c,2);
+	$c->_layoutRequest($LAYOUT_REQUEST_VALUE);
     }
 
     $old;
@@ -308,7 +327,7 @@ sub variable {
 	$c->{'-variable'} = $varref;
 	$c->traceVariable($varref, 'w', sub { $c->value($_[1]) });
 	$$varref = $oldval;
-	_layoutRequest($c,2);
+	$c->_layoutRequest($LAYOUT_REQUEST_VALUE);
     }
     $oldval;
 }
