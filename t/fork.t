@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test;
+use Test::More;
 use Tk;
 
 if ($^O eq 'MSWin32' || $^O eq 'cygwin') {
@@ -9,21 +9,27 @@ if ($^O eq 'MSWin32' || $^O eq 'cygwin') {
     exit;
 }
 
-plan tests => 1;
+plan tests => 3;
 
 my $mw = tkinit;
 $mw->geometry("+10+10");
-
+ok Tk::IsParentProcess(), 'This is the parent';
+pipe(my($rdr,$wtr));
 if (fork == 0) {
+    close $rdr;
+    print $wtr (Tk::IsParentProcess() ? 'parent' : 'child'), "\n";
     print "# Child $$\n";
     CORE::exit();
 }
 else {
-  print "# Parent $$\n";
+    close $wtr;
+    print "# Parent $$\n";
 }
-# Pause to allow child to exit
+my $child_result = <$rdr>;
+like $child_result, qr{^child}, 'Child is not the parent process';
+# Pause to allow child to exit, and to collect the 
 select undef, undef, undef, 0.5;
 $mw->update;
-ok(1);
+pass 'No segfaults';
 
 __END__
