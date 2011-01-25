@@ -135,10 +135,13 @@
 
 /*
  * Not all systems declare the errno variable in errno.h. so this
- * file does it explicitly.
+ * file does it explicitly (maybe).
  */
 
-extern int errno;
+#include <errno.h>
+#ifndef errno
+    extern int errno;
+#endif
 
 /*
  * Define "NBBY" (number of bits per byte) if it's not already defined.
