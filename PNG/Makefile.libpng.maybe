@@ -72,6 +72,8 @@ sub try_configure
      $Config{'archname'} =~ m{^(?:
  			       amd64-freebsd
 			      |amd64-netbsd
+			      |amd64-openbsd
+			      |OpenBSD.amd64-openbsd
  			      |i386-freebsd
 			      |x86_64-linux
  			      |sun4-solaris
