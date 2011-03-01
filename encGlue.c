@@ -78,8 +78,7 @@ int
 Tcl_UniCharIsWordChar(int ch)
 {
  dTHX;
- /* FIXME XXX what about CONNECTOR_BITS like in th Tcl original? */
- return Perl_is_uni_alpha(aTHX_ ch) || Perl_is_uni_digit(aTHX_ ch);
+ return Perl_is_uni_alnum(aTHX_ ch);
 }
 
 int
