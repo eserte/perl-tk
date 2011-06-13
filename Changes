@@ -1,3 +1,44 @@
+Tk-804.029_500 release
+----------------------
+
+Fixes
+ Fixed compilation with newer X11 version (conflicting types for
+ 'XKeycodeToKeysym')
+ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=613188
+
+ Use standard libpng configure for some 64 bit variants of OpenBSD,
+ amd64-freebsd, x86_64-linux, MacOSX 10.6.4 and newer.
+
+ Fixed Strawberry 64bit builds.
+
+ Changed handling of "underscore" character.
+ https://rt.cpan.org/Ticket/Display.html?id=66205
+
+ Tk::ProgressBar::configure calls now go through ConfigChanged
+ https://rt.cpan.org/Ticket/Display.html?id=63775
+
+ Fixed Tk::FBox::ResolveFile with defaultextension when directory
+ contains dots
+ https://rt.cpan.org/Ticket/Display.html?id=55146
+
+New features
+ BalloonInfo for HList
+ Implementation by Christoph Lambrecht, documentation by
+ Slaven Rezic
+ https://rt.cpan.org/Ticket/Display.html?id=55887
+
+ Perl/Tk is now available at github.
+
+ Improved "all widgets at a glance" demo.
+
+Tests
+ Another attempt on skipping tests if no DISPLAY is available.
+ 
+ Converted fork.t and progbar.t to Test::More
+
+Documentation
+ Fixed SYNOPSIS section in Tk::Text Pod
+
 Tk-804.029 release (2010-05-27)
 ------------------
 
