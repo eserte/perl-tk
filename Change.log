@@ -1,3 +1,8 @@
+Note: this file is not updated anymore. Please use "git log" instead.
+The git repository can be found at
+
+    git://github.com/eserte/perl-tk.git
+
 ------------------------------------------------------------------------
 r14067 | srezic | 2010-05-27 21:16:53 +0200 (Thu, 27 May 2010) | 1 line
 
