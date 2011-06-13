@@ -410,6 +410,10 @@ EOF
 
   $inc = ($xinc eq "-I/usr/include") ? "" : $xinc;
 
+  if (!defined $XFT)
+   {
+    $XFT = 1;
+   }
   if ($XFT)
    {
     # Found basic X libraries now see if we can find -lXft

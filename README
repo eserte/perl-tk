@@ -43,18 +43,12 @@ Others t/JP.t and t/KR.t need oriental fonts and can take a long time to
 run on a machine with a lot of fonts but which lacks the glyphs tests are
 looking for.
 
-An experimental implementation of client side fonts via
-freetype2, fontconfig and Xft is provided for Unix.
-This is strongly recommened if you are planning to make use
-of Unicode rendering capabilities of Tk. It also gives anti-aliased
-fonts for regular text (if you have TrueType or Type1 fonts and
-they are in your fontconfig config file).
-
-To try this install do
-
-  perl Makefile.PL XFT=1
-
-See http://fontconfig.org
+By default Perl/Tk makes use of client side fonts via freetype2,
+fontconfig and Xft on Unix systems. This gives anti-aliased fonts for
+regular text (if you have TrueType or Type1 fonts and they are in your
+fontconfig config file). See also http://fontconfig.org .
+To disable this feature run the Makefile.PL
+with "perl Makefile.PL XFT=0".
 
 For questions on this package try news:comp.lang.perl.tk or e-mail to
 <ptk@lists.stanford.edu> (needs registration to the mailing list) or
