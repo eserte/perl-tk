@@ -63,7 +63,7 @@ sub False { 0 }
 use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'focus' => [qw(-force -lastfor)],
                     'pack'  => [qw(configure forget info propagate slaves)],
-                    'grid'  => [qw(bbox columnconfigure configure forget info location propagate rowconfigure size slaves)],
+                    'grid'  => [qw(bbox columnconfigure configure forget info location propagate remove rowconfigure size slaves)],
                     'form'  => [qw(check configure forget grid info slaves)],
                     'event' => [qw(add delete generate info)],
                     'place' => [qw(configure forget info slaves)],
@@ -1225,7 +1225,7 @@ sub grid
 {
  local $SIG{'__DIE__'} = \&Carp::croak;
  my $w = shift;
- if (@_ && $_[0] =~ /^(?:bbox|columnconfigure|configure|forget|info|location|propagate|rowconfigure|size|slaves)$/x)
+ if (@_ && $_[0] =~ /^(?:bbox|columnconfigure|configure|forget|info|location|propagate|remove|rowconfigure|size|slaves)$/x)
   {
    my $opt = shift;
    Tk::grid($opt,$w,@_);
