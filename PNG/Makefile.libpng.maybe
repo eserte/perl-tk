@@ -70,12 +70,10 @@ sub try_configure
 {
  if ($^O eq 'darwin' ||
      $Config{'archname'} =~ m{^(?:
- 			       amd64-freebsd
-			      |amd64-netbsd
-			      |amd64-openbsd
+ 			       amd64-.* # e.g. freebsd, netbsd, openbsd
 			      |OpenBSD.amd64-openbsd
  			      |i386-freebsd
-			      |x86_64-linux
+			      |x86_64-.* # e.g. linux, dragonfly
  			      |sun4-solaris
  			      |IP35-irix
  			      )(?:$|-.*)
