@@ -1,3 +1,11 @@
+Tk-804.029_501 release
+----------------------
+Fixes
+ Use standard libpng configure for all amd64 and x86_64 variants.
+
+ Support gridRemove method.
+ https://rt.cpan.org/Ticket/Display.html?id=65900
+
 Tk-804.029_500 release
 ----------------------
 
