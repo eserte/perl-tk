@@ -14,7 +14,7 @@ $numFormats++ unless $@;
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
 
-plan tests => (2*(7 * $numFormats) + 2 + 2);
+plan tests => (2*(7 * $numFormats) + 2 + 2 + 1);
 
 my @files = ();
 
@@ -109,6 +109,12 @@ SKIP:
   $mw->update;
  }
 $col++;
+
+{
+    # RT #70429: correct file name in error message
+    eval { $mw->Photo(-file => $0) };
+    like $@, qr{\Q$0\E}, 'File name appears in error message';
+}
 
 $mw->after(2500,[destroy => $mw]);
 MainLoop;
