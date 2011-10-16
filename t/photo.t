@@ -1,6 +1,6 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
-use Test;
+use Test::More;
 use Tk;
 use Tk::Photo;
 
@@ -23,7 +23,7 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
  {
   my $file = Tk->findINC($leaf);
   my $src = $mw->Photo(-file => $file);
-  ok(defined($src),1," Cannot load $file");
+  ok defined($src), "Load $file";
   my $kind = 'Initial';
   my $col = 0;
   $mw->Label(-text  => 'Initial')->grid(-row => $row, -column => $col);
@@ -32,19 +32,17 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
 
   foreach $kind ($src->formats)
    {
-    print "# Testing $kind\n";
     my $f = lc("t/test.$kind");
     my $p = $f;
     push(@files,$f);
-    print "$kind - $f\n";
     eval { $src->write($f, -format => "$kind") };
-    ok($@,''," write $@");
-    ok($p,$f,"File name corrupted");
-    ok(-f $f,1,"No $f created");
+    is $@, '', "No error writing $f as $kind";
+    is $p, $f, "File name is not corrupted ($f)";
+    ok -f $f, "File $f was created";
     my $new;
     eval { $new = $mw->Photo(-file => $f, -format => "$kind") };
-    ok($@,''," load $@");
-    ok(defined($new),1,"Could not load $f");
+    is $@, '', "No error loading $f as $kind";
+    ok defined($new), "Loading $f ($kind)";
 
     my $skip_unsupported_data_format = $kind =~ /^(PPM|gif)$/ ? "$kind is not supported" : "";
 
@@ -53,21 +51,21 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
     if ($skip_unsupported_data_format)
      {
       Tk::catch { $data = $src->data(-format => $kind) };
-      ok($@,qr/image string format "$kind" is not supported/,"Error messaage");
-      skip("No data for $kind",1,1);
+      like $@, qr/image string format "$kind" is not supported/, "Error message for $kind";
+      SKIP: { skip "No data for $kind", 1 }
      }
     else
      {
       $data = $src->data(-format => $kind);
-      ok(defined($data) && $data ne "", 1, "$kind returns data");
+      ok defined($data) && $data ne "", "$kind returns data";
       if (defined $data)
        {
         $new2 = $mw->Photo(-data => $data, -format => $kind) if defined $data;
-        ok(defined $new2, 1,"Data back to image");
+        ok defined $new2, "Data back to image";
        }
       else
        {
-        skip("No data was returned",1);
+	SKIP: { skip "No data was returned", 1 }
        }
      }
 
@@ -88,27 +86,25 @@ $mw->Label(-text => "Extra tests")->grid(-row => $row++, -column => $col);
 my $file = Tk->findINC('Xcamel.gif');
 my $data = do { open my $fh, $file or die $!; binmode $fh; local $/; <$fh> };
 
-if ($Tk::VERSION <= 804.027)
+SKIP:
  {
-  skip("Binary GIF data not supported",1,1);
- }
-else
- {
+  skip "Binary GIF data not supported", 1
+   if $Tk::VERSION <= 804.027;
+
   my $image = $mw->Photo(-data => $data);
-  ok(defined $image, 1, "Read binary GIF data");
+  ok defined $image, "Read binary GIF data";
   $mw->Label(-background => 'white', -image => $image)->grid(-row => $row, -column => $col);
   $mw->update;
  }
 $col++;
 
-if (!eval { require MIME::Base64; 1 })
+SKIP:
  {
-  skip("Need MIME::Base64 module",1,1);
- }
-else
- {
+  skip "Need MIME::Base64 module", 1
+   if !eval { require MIME::Base64; 1 };
+
   my $image = $mw->Photo(-data => MIME::Base64::encode_base64($data));
-  ok(defined $image, 1, "Read base64 encoded GIF data");
+  ok defined $image, "Read base64 encoded GIF data";
   $mw->Label(-background => 'white', -image => $image)->grid(-row => $row, -column => $col);
   $mw->update;
  }
