@@ -247,7 +247,7 @@ if ($Tk::MMutil::IsWin32 or ($win_arch eq 'MSWin32' and $^O eq 'cygwin'))
    {
     $file = 'tkres$(OBJ_EXT)';
     $dep .= "$file : mTk/win/rc/tk.rc\n\t";
-    $dep .= 'windres -o $@ --include-dir . --include-dir mTk/win/rc mTk/win/rc/tk.rc';
+    $dep .= 'windres --use-temp-file -o $@ --include-dir . --include-dir mTk/win/rc mTk/win/rc/tk.rc';
    }
   elsif ($cc =~ /^bcc/i)
    {
