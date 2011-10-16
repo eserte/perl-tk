@@ -1794,7 +1794,7 @@ CanvasWidgetCmd(clientData, interp, objc, objv)
 	  }
 	  case CANV_CLEAR: {
 	    if (objc != 3) {
-		Tcl_AppendResult(interp, 3, objv, (char *) NULL);
+		Tcl_WrongNumArgs(interp, 3, objv, "tagOrId index");
 		result = TCL_ERROR;
 		goto done;
 	    }
