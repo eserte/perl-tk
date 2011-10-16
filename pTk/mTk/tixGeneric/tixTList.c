@@ -1357,7 +1357,7 @@ Tix_TranslateIndex(wPtr, interp, string, index, isInsert)
 	}
 	else if (*index < 0) {
 	    Tcl_AppendResult(interp,"expected non-negative integer but got \"",
-	    	string, "\"", NULL);
+	    	Tcl_GetString(string), "\"", NULL);
 	    return TCL_ERROR;
 	}
     }

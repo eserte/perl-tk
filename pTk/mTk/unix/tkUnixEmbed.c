@@ -153,7 +153,7 @@ TkpUseWindow(interp, tkwin, string)
     if (anyError) {
 	if (interp != NULL) {
 	    Tcl_AppendResult(interp, "couldn't create child of window \"",
-		    string, "\"", (char *) NULL);
+		    Tcl_GetString(string), "\"", (char *) NULL);
 	}
 	return TCL_ERROR;
     }
