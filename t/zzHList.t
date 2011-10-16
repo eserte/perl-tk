@@ -14,7 +14,7 @@ BEGIN {
     }
 }
 
-plan tests => 30;
+plan tests => 32;
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -144,6 +144,15 @@ TODO: {
     $hl->add(0);
     eval { $hl->itemCreate(0, 0, -text => "Something", -data => "invalid") };
     like($@, qr{Bad option `-data' at}, "-data not valid for itemCreate");
+}
+
+{
+    my $hl = $mw->HList(-columns => 2);
+    $hl->headerCreate(0, -text => 'h1');
+    is $hl->headerCget(0, '-text'), 'h1', 'headerCget call';
+    eval { $hl->headerCget(1, '-text') };
+    like $@, qr{Column "1" does not have a header}, 'Error message on headerCget call on column without a header';
+    $hl->destroy;
 }
 
 1;
