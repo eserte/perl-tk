@@ -2233,7 +2233,7 @@ ConfigureCanvas(interp, canvasPtr, objc, objv, flags)
 	}
 	if (argc2 != 4) {
 	    Tcl_AppendResult(interp, "bad scrollRegion \"",
-		    canvasPtr->regionArg, "\"", (char *) NULL);
+		    Tcl_GetString(canvasPtr->regionArg), "\"", (char *) NULL);
 	    badRegion:
 	    /* ckfree(canvasPtr->regionArg); */
 	    canvasPtr->regionArg = NULL;

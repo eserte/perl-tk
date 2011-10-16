@@ -55,7 +55,7 @@ my @dashes;
 push @dashes, map { +{dash => $_, width => 1} } @dashes1;
 push @dashes, map { +{dash => $_, width => 2} } @dashes2;
 
-plan tests => 5 + 3 * @dashes;
+plan tests => 6 + 3 * @dashes;
 
 my $show;
 GetOptions("show!" => \$show)
@@ -121,11 +121,17 @@ $b->Subwidget("message")->configure(-font => "monospace");
 }
 
 {
+    eval { $mw->Canvas(-scrollregion => "1 2") };
+    like $@, qr{bad scrollRegion "1 2"}, "Expected error message for bad scrollregion";
+}
+
+{
     my $c = $mw->Canvas;
     my $item = $c->createText(0,0,-text=>"foo");
     eval { $c->select('clear',$item,"bla","foo") };
     # This used to segfault for Tk <= 804.029_501
     like $@, qr{\Qwrong # args: should be ".canvas\E\d+\Q select clear tagOrId index"}, 'select clear error message';
+    $c->destroy;
 }
 
 if (!$show) {
