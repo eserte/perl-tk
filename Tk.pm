@@ -71,7 +71,7 @@ $Tk::CHANGE      = 'git-controlled';
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.4';
 $Tk::patchLevel  = '8.4';
-$Tk::VERSION     = '804.029_501';
+$Tk::VERSION     = '804.029_502';
 $Tk::VERSION     = eval $Tk::VERSION;
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
