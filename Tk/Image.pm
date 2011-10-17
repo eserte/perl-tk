@@ -38,7 +38,7 @@ sub ClassInit
 
 require Tk::Submethods;
 
-Direct Tk::Submethods ('image' => [qw(delete width height type)]);
+Direct Tk::Submethods ('image' => [qw(delete width height inuse type)]);
 
 sub Tk::Widget::imageNames
 {

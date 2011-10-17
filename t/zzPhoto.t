@@ -3,7 +3,7 @@ use strict;
 use Test;
 use Tk;
 
-BEGIN { plan tests => 27 };
+BEGIN { plan tests => 31 };
 
 my $mw = Tk::MainWindow->new;
 my $xpm;
@@ -17,6 +17,7 @@ my $photo;
    eval { $photo = $mw->Photo(-file=>$xpm); };
    ok($@, '', 'Problem creating Photo widget');
 }
+
 ##
 ## configure('-data') returned '-data {} {} {} {}' up and incl. Tk800.003
 ##
@@ -32,6 +33,14 @@ my $photo;
        ok($@, '', "can't do configure $opt");
        ok(scalar(@$opts), 5, "configure $opt returned not 5 elements");
      }
+}
+
+{
+    ok $photo->image('inuse'), 0, 'photo is not in use';
+    ok $photo->inuse, 0, 'photo is not in use';
+    $mw->Label(-image => $photo);
+    ok $photo->image('inuse'), 1, 'photo is now in use';
+    ok $photo->inuse, 1, 'photo is now in use';
 }
 
 1;
