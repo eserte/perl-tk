@@ -985,7 +985,7 @@ LINKAGE int DItemStyleParseProc(clientData, interp, tkwin, value, widRec,offset)
     return TCL_OK;
 
 not_found:
-    Tcl_AppendResult(interp, "Display style \"", value,
+    Tcl_AppendResult(interp, "Display style \"", Tcl_GetString(value),
 	"\" not found", NULL);
     return TCL_ERROR;
 }

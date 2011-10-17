@@ -1994,6 +1994,7 @@ t/font.t
 t/fork.t
 t/geomgr.t
 t/iso8859-1.t
+t/itemstyle.t
 t/JP.dat
 t/JP.t
 t/KR.dat

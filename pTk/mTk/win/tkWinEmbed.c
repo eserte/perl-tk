@@ -176,7 +176,7 @@ TkpUseWindow(interp, tkwin, string)
 
     if (!IsWindow(hwnd)) {
         if (interp != (Tcl_Interp *) NULL) {
-            Tcl_AppendResult(interp, "window \"", string,
+            Tcl_AppendResult(interp, "window \"", Tcl_GetString(string),
                     "\" doesn't exist", (char *) NULL);
         }
         return TCL_ERROR;

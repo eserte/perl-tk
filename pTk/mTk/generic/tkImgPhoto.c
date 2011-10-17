@@ -4092,7 +4092,7 @@ MatchFileFormat(interp, chan, fileName, formatObj, imageFormatPtr,
 	} else {
 	    Tcl_AppendResult(interp,
 		    "couldn't recognize data in image file \"",
-		    fileName, "\"", (char *) NULL);
+		    Tcl_GetString(fileName), "\"", (char *) NULL);
 	}
 	return TCL_ERROR;
     }

@@ -136,7 +136,7 @@ Tix_HLGetHeader(interp, wPtr, string, requireIPtr)
 	return NULL;
     }
     if (requireIPtr && wPtr->headers[column]->iPtr == NULL) {
-	Tcl_AppendResult(interp, "Column \"", string,
+	Tcl_AppendResult(interp, "Column \"", Tcl_GetString(string),
 	    "\" does not have a header", (char*)NULL);
 	return NULL;
     }

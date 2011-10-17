@@ -280,11 +280,11 @@ FileReadGIF(interp, chan, fileName, format, imageHandle, destX, destY,
     }
     if (!ReadGIFHeader(chan, &fileWidth, &fileHeight)) {
     	Tcl_AppendResult(interp, "couldn't read GIF header from file \"",
-		fileName, "\"", NULL);
+		Tcl_GetString(fileName), "\"", NULL);
 	return TCL_ERROR;
     }
     if ((fileWidth <= 0) || (fileHeight <= 0)) {
-	Tcl_AppendResult(interp, "GIF image file \"", fileName,
+	Tcl_AppendResult(interp, "GIF image file \"", Tcl_GetString(fileName),
 		"\" has dimension(s) <= 0", (char *) NULL);
 	return TCL_ERROR;
     }

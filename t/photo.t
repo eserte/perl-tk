@@ -1,5 +1,6 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
+use File::Temp qw(tempfile);
 use Test::More;
 use Tk;
 use Tk::Photo;
@@ -14,7 +15,7 @@ $numFormats++ unless $@;
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
 
-plan tests => (2*(7 * $numFormats) + 2 + 2);
+plan tests => (2*(7 * $numFormats) + 2 + 2 + 1 + 2);
 
 my @files = ();
 
@@ -109,6 +110,23 @@ SKIP:
   $mw->update;
  }
 $col++;
+
+{
+    # RT #70429: correct file name in error message
+    eval { $mw->Photo(-file => $0) };
+    like $@, qr{\Q$0\E}, 'File name appears in error message';
+}
+
+{
+    my($tmpfh,$tmpfile) = tempfile(SUFFIX => ".gif", UNLINK => 1)
+	or die "Cannot create temporary file: $!";
+    print $tmpfh "GIF89a\0\0\0\0";
+    close $tmpfh or die $!;
+
+    eval { $mw->Photo(-file => $tmpfile, -format => 'gif') };
+    like $@, qr{\Q$tmpfile\E}, 'File name appears in error message';
+    like $@, qr{\Qhas dimension(s) <= 0}, 'No dimensions error message';
+}
 
 $mw->after(2500,[destroy => $mw]);
 MainLoop;
