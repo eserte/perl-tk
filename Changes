@@ -1,5 +1,11 @@
+Tk-804.030 release (2011-10-20)
+------------------
+
+This is basically the same like Tk-804.029_502.
+
 Tk-804.029_502 release (2011-10-17)
 ----------------------
+
 Fixes
  RT #71718: windres call needs the --use-temp-file on some Windows systems
 
