@@ -3,7 +3,7 @@ use vars qw($VERSION $XS_VERSION @EXPORT_OK);
 END { CleanupGlue() }
 $VERSION = '4.024'; # was: sprintf '4.%03d', q$Revision: #15 $ =~ /\D(\d+)\s*$/;
 $XS_VERSION = '804.030';
-$XS_VERSION = eval $XS_VERSION;
+$XS_VERSION =~ s{_}{};
 use base  qw(Exporter);
 use XSLoader;
 @EXPORT_OK = qw($XS_VERSION DONT_WAIT WINDOW_EVENTS  FILE_EVENTS

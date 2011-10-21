@@ -15,7 +15,7 @@ BEGIN
     if (/\$Tk::VERSION\s+=\s+'([0-9._]+)'/)
      {
       $DISTVERSION = $1;
-      $VERSION = eval $DISTVERSION;
+      ($VERSION = $DISTVERSION) =~ s{_}{};
       last;
      }
    }
