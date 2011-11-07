@@ -1,4 +1,4 @@
-$Tie::Watch::VERSION = '1.3';
+$Tie::Watch::VERSION = '1.302';
 
 package Tie::Watch;
 
@@ -421,7 +421,8 @@ sub normalize_callbacks {
 
 ###############################################################################
 
-package Tie::Watch::Scalar;
+package # temporarily disabled from PAUSE indexer because of permission problems
+ Tie::Watch::Scalar;
 
 use Carp;
 @Tie::Watch::Scalar::ISA = qw/Tie::Watch/;
@@ -454,7 +455,8 @@ sub STORE   {$_[0]->callback('-store', $_[1])}
 
 ###############################################################################
 
-package Tie::Watch::Array;
+package # temporarily disabled from PAUSE indexer because of permission problems
+ Tie::Watch::Array;
 
 use Carp;
 @Tie::Watch::Array::ISA = qw/Tie::Watch/;
@@ -515,7 +517,8 @@ sub UNSHIFT   {$_[0]->callback('-unshift', @_[1 .. $#_])}
 
 ###############################################################################
 
-package Tie::Watch::Hash;
+package # temporarily disabled from PAUSE indexer because of permission problems
+ Tie::Watch::Hash;
 
 use Carp;
 @Tie::Watch::Hash::ISA = qw/Tie::Watch/;
