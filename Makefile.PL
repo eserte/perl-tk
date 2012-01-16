@@ -142,7 +142,7 @@ sub MY::post_initialize
    }
    else {
      push(@{$self->{'O_FILES'}},
-          ($Config{'cc'} =~ /^gcc/i) ?
+          ($Config{'cc'} =~ /gcc/i) ?
                'pTk\\tkres$(OBJ_EXT)' : 'pTk\\tk.res');
    }
   }

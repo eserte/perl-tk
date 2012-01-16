@@ -551,7 +551,7 @@ sub TkExtMakefile
      $i = "-I$tk $i";
      $i = "-I$ptk $i";
     }
-   if ($IsWin32 && $Config{'cc'} =~ /^gcc/i)
+   if ($IsWin32 && $Config{'cc'} =~ /gcc/i)
     {
      my $base  = $Config{'libpth'};
      #$base =~ s#lib$#i386-mingw32/lib#;
