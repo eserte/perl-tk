@@ -243,7 +243,7 @@ if ($Tk::MMutil::IsWin32 or ($win_arch eq 'MSWin32' and $^O eq 'cygwin'))
  {
   my $cc = $Config{'cc'};
   my $file = 'tk.res';
-  if ($cc =~ /^gcc/i)
+  if ($cc =~ /gcc/i)
    {
     $file = 'tkres$(OBJ_EXT)';
     $dep .= "$file : mTk/win/rc/tk.rc\n\t";
