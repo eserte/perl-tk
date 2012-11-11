@@ -2,7 +2,6 @@
 # -*- perl -*-
 
 #
-# $Id: $
 # Author: Slaven Rezic
 #
 
@@ -20,7 +19,7 @@ BEGIN {
     }
 }
 
-plan tests => 13;
+plan tests => 16;
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
@@ -66,6 +65,16 @@ isa_ok($table->Subwidget("xscrollbar"), "Tk::Scrollbar",
        "x scrollbar");
 isa_ok($table->Subwidget("yscrollbar"), "Tk::Scrollbar",
        "y scrollbar");
+
+{
+    my $b2 = $table->Button(-text => "2nd button");
+    $table->put(0,1,$b2);
+    is($table->get(0,1), $b2);
+
+    ok Tk::Exists($b2), 'Button exists before clear() method';
+    $table->clear;
+    ok !Tk::Exists($b2), 'Button was destroyed by clear() method';
+}
 
 if ($ENV{BATCH}) {
     $mw->after(150, sub { $mw->destroy });

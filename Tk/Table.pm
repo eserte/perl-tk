@@ -392,8 +392,8 @@ sub clear {
     my $self = shift;
     my $rows = $self->cget(-rows);
     my $cols = $self->cget(-columns);
-    foreach my $r (1 .. $rows) {
-	foreach my $c (1 .. $cols) {
+    foreach my $r (0 .. $rows-1) {
+	foreach my $c (0 .. $cols-1) {
 	    my $old = $self->get( $r, $c );
 	    next unless $old;
 	    $self->LostSlave($old);
