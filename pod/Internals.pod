@@ -1,6 +1,6 @@
 =head1 NAME
 
-CallingTk -  what is Perl Tk interface doing when you call Tk functions.
+Tk::Internals -  what is Perl Tk interface doing when you call Tk functions.
 
 =for category  C Programming
 

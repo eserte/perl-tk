@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-chooseColor - pops up a dialog box for the user to select a color.
+Tk::chooseColor - pops up a dialog box for the user to select a color.
 
 =for category Popups and Dialogs
 

@@ -1,7 +1,7 @@
 
 =head1 NAME
 
-B<Tk> - An overview of an Object Oriented Tk8 extension for perl5
+Tk::overview - An overview of an Object Oriented Tk8 extension for perl5
 
 =for category  Introduction
 

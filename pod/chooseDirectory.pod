@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-chooseDirectory - pops up a dialog box for the user to select a directory.
+Tk::chooseDirectory - pops up a dialog box for the user to select a directory.
 
 =for category  Tk Generic Methods
 

@@ -1,7 +1,7 @@
 
 =head1 NAME
 
-WidgetDemo() - create a standard widget demonstration window.
+Tk::WidgetDemo - create a standard widget demonstration window.
 
 =for pm demos/demos/widget_lib/WidgetDemo.pm
 

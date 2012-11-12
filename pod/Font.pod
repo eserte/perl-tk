@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-font - Create and inspect fonts.
+Tk::Font - Create and inspect fonts.
 
 =for category  Tk Generic Methods
 

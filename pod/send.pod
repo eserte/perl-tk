@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-send - Execute a command in a different application
+Tk::send - Execute a command in a different application
 
 =for category Tk Generic Methods
 

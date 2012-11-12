@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-option - Using the option database in Perl/Tk
+Tk::option - Using the option database in Perl/Tk
 
 =for category Creating and Configuring Widgets
 

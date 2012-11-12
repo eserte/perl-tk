@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-setPalette, bisque - Modify the Tk color palette
+Tk::palette - Modify the Tk color palette
 
 =for category Creating and Configuring Widgets
 

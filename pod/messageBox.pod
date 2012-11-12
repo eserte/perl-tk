@@ -1,6 +1,6 @@
 =head1 NAME
 
-messageBox  -  pop up a message window and wait for user response.
+Tk::messageBox  -  pop up a message window and wait for user response.
 
 =for category Popups and Dialogs
 

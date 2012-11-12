@@ -1,6 +1,6 @@
 =head1 NAME
 
-Perl/Tk - Writing Tk applications in Perl 5
+Tk::UserGuide - Writing Tk applications in Perl 5
 
 =for category Introduction
 

@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-tkvars - Variables used or set by Tk
+Tk::tkvars - Variables used or set by Tk
 
 =for category  Tk Generic Methods
 

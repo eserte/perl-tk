@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-grab - Confine pointer and keyboard events to a window sub-tree
+Tk::grab - Confine pointer and keyboard events to a window sub-tree
 
 =for category User Interaction
 
