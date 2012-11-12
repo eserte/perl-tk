@@ -177,9 +177,11 @@ demos/widget_old
 DragDrop/drag_test
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
+DragDrop/DragDrop/Common.pod
 DragDrop/DragDrop/LocalDrop.pm
 DragDrop/DragDrop/Rect.pm
 DragDrop/DragDrop/SunConst.pm
+DragDrop/DragDrop/SunConst.pod
 DragDrop/DragDrop/SunDrop.pm
 DragDrop/DragDrop/SunSite.pm
 DragDrop/DragDrop/XDNDDrop.pm
@@ -958,7 +960,6 @@ pod/chooseDirectory.pod
 pod/Clipboard.pod
 pod/CmdLine.pod
 pod/ColorEditor.pod
-pod/Common.pod
 pod/composite.pod
 pod/Compound.pod
 pod/ConfigSpecs.pod
@@ -1112,7 +1113,6 @@ pod/send.pod
 pod/Spinbox.pod
 pod/Submethods.pod
 pod/subs
-pod/SunConst.pod
 pod/Table.pod
 pod/Tcl-perl.pod
 pod/Text.pod
