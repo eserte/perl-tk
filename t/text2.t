@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-plan tests => 8;
+plan tests => 11;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -54,8 +54,7 @@ $mw->geometry("+10+10");
     printf FH "formatted: %s\n", "string";
     syswrite FH, "toto\n", 3, 2;
 
-    # XXX For some reason, an additional \n appears at the end
-    is($t->Contents, "Hello Text World!\nformatted: string\nto\n\n", "tied handle and Contents()");
+    is($t->Contents, "Hello Text World!\nformatted: string\nto\n", "tied handle and Contents()");
     # XXX untie attempted while 3 inner references still exist
     untie *FH;
     $t->destroy;
@@ -66,10 +65,19 @@ $mw->geometry("+10+10");
     tie *FH, 'Tk::Text', $t
 	or die $!;
     print FH "Scrolled\n";
-    # XXX For some reason, an additional \n appears at the end
-    is($t->Contents, "Scrolled\n\n", "tied handle on scrolled Text widget");
+    is($t->Contents, "Scrolled\n", "tied handle on scrolled Text widget");
     # XXX untie attempted while 3 inner references still exist
     untie *FH;
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Scrolled(qw(Text -width 20 -height 10))->pack;
+    is $t->Contents, '', 'fresh Tk::Text is empty';
+    $t->Contents('newline-less');
+    is $t->Contents, 'newline-less', 'content without newline';
+    $t->Contents('');
+    is $t->Contents, '', 'after emptying Tk::Text';
     $t->destroy;
 }
 
