@@ -1,3 +1,8 @@
+Incompatible changes
+ The Tk::Text::Contents() method does not return an extra newline
+ anymore (RT #83124). The version number of Tk::Text was incremented
+ to 4.029 and may be used to detect the change.
+
 Tk-804.030 release (2011-10-20)
 ------------------
 
