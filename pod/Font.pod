@@ -139,7 +139,7 @@ as using a named font. The object is a reference to the name, and carries
 additional information e.g. which MainWindow it relates to in an manner peculiar
 to perl/Tk.
 
-=item [3] I<systemfont>
+=item [2] I<systemfont>
 
 The platform-specific name of a font, interpreted by the graphics server.
 This also includes, under X, an XLFD (see L<[4]|/[4]>) for which a single ``B<*>''
