@@ -548,9 +548,11 @@ such as group.
 
 =item I<$toplevel>-E<gt>B<wrapper>
 
-Returns the window id of the wrapper window in which Tk has placed
-I<$toplevel>. This is the id by which window manager will know
-I<$toplevel>, and so is appropriate place to add X properties.
+Returns a list of two elements: the window id of the wrapper window in
+which Tk has placed I<$toplevel>, and the height of the menu bar. The
+id is the one by which window manager will know I<$toplevel>, and so
+is appropriate place to add X properties. The menu height is only
+returned on X. On Windows, this value is always zero.
 
 =back
 
