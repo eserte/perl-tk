@@ -1400,7 +1400,17 @@ TclObj_get(pTHX_ SV *sv, MAGIC *mg)
 static int
 TclObj_free(pTHX_ SV *sv, MAGIC *mg)
 {
- TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
+ TclObjMagic_t * info;
+ if (SvTYPE(mg->mg_obj) == SVTYPEMASK)
+  {
+   /* Oops!! Our magic info SV has already been sweeped away
+    * during global destruction.  In this case we might leak
+    * some the stuff hanging off the Tcl_InternalRep, but there
+    * are not really much more we can do here.
+    */
+   return;
+  }
+ info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
  if (info->type)
   {
 #ifdef DEBUG_TCLOBJ
