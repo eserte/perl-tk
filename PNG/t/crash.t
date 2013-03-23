@@ -25,6 +25,8 @@ BEGIN {
 plan tests => 1;
 
 my $mw = tkinit;
+$mw->geometry('+10+10');
+
 $mw->packPropagate(0);
 my $file = "$FindBin::RealBin/../pngtest.png";
 my $img = $mw->Photo(-file => $file);
