@@ -1521,11 +1521,11 @@ Tcl_ObjMagic(Tcl_Obj *obj,int add)
    iv->type = type;
    if (iv->type == &tclIntType)
     {
-     iv->internalRep.longValue = SvIV(obj);
+     iv->internalRep.longValue = SvIV_nomg(obj);
     }
    else if (iv->type == &tclDoubleType)
     {
-     iv->internalRep.doubleValue = SvNV(obj);
+     iv->internalRep.doubleValue = SvNV_nomg(obj);
     }
    return iv;
   }
