@@ -182,7 +182,7 @@ foreach $arg (@ARGV)
 
 # Now we have possibly $Tk::MMtry::VERBOSE set, we can
 # use the try_compile stuff
-if (try_compile("config/perlrx.c", ["-I$Config{'archlibexp'}/CORE"]))
+if (try_compile("config/perlrx.c", ["-I$Config{'archlibexp'}/CORE"], undef, ["-c"]))
  {
   $define{'USE_NEWSTYLE_REGEXP_STRUCT'} = 1;
  }
