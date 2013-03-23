@@ -25,7 +25,7 @@ if ($] < 5.008005) {
     exit 0;
 }
 
-plan tests => 1;
+plan tests => 2;
 
 my $mw = tkinit;
 {
@@ -35,6 +35,7 @@ my $mw = tkinit;
     $s =~ /(.)/;
     $b->configure(-text, $1);
     pass("RT #41436"); # otherwise it would abort()
+    is $b->cget('-text'), "\x90", 'expected value';
 }
 
 __END__
