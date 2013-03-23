@@ -39,7 +39,7 @@ my $f = $mw->Scrolled('DirTree',
 		      },
                      )->pack(qw( -fill both -expand 1 ));
 pass('after create, with -directory option');
-my $tree = $f->Subwidget();
+my $tree = $f->Subwidget('scrolled');
 isa_ok($tree, 'Tk::DirTree');
 
 my $testdir;
