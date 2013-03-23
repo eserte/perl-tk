@@ -1,57 +1,61 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
+
 use strict;
-use Test;
-use Tk;
-use Tk::Photo;
+use FindBin;
+use File::Temp qw(tempfile);
+use Test::More;
+
+use Tk;        
+use Tk::Photo;    
 
 my @writeopt = ([],[-grayscale],[-progressive],[-quality => 13],[-smooth => 12]);
 
+my $mw = eval { Tk::MainWindow->new() };
+if (!Tk::Exists($mw)) {
+    plan skip_all => "Cannot create MainWindow: $@";
+    CORE::exit(0);
+}
 
 plan tests => 7*@writeopt+6;
 
 eval { require Tk::JPEG };
-ok($@,'',"Cannot load Tk::JPEG");
+is $@, '', "loading Tk::JPEG";
 
-my $file = (@ARGV) ? shift : 'jpeg/testimg.jpg';
+my $file = (@ARGV) ? shift : "$FindBin::RealBin/../jpeg/testimg.jpg";
 
-my $mw = MainWindow->new;
 $mw->geometry('+10+10');
-my $image;
-eval {$image = $mw->Photo('-format' => 'jpeg', -file => $file)};
-ok($@,'',"Error $@");
-ok($image->width,227,"Wrong width");
-ok($image->height,149,"Wrong height");
+
+my $image = eval { $mw->Photo('-format' => 'jpeg', -file => $file) };
+is $@, '', "loading jpeg photo from file";
+is $image->width, 227, "width check";
+is $image->height, 149, "height height";
 my $l = $mw->Label(-image => $image, -bd => 0, -padx => 0, -pady => 0)->pack;
 $mw->update;
-ok($l->width,227,"Wrong width");
-ok($l->height,149,"Wrong height");
+is $l->width, 227, "width check of label";
+is $l->height, 149, "height check of label";
 
 my $image2;
 
 foreach  my $opt (@writeopt)
  {
-  unlink("testout.jpg") if -f "testout.jpg";
-  eval { $image->write("testout.jpg", -format => ['jpeg',@$opt]) };
-  ok($@,'',"Error $@");
-  my $ok = (-s "testout.jpg") ? 1 : 0;
-  ok($ok,1,"File has no size");
+  my($tmpfh,$tmpfile) = tempfile(SUFFIX => '.jpg', UNLINK => 1)
+      or die "Can't create temporary file: $!";
+  eval { $image->write($tmpfile, -format => ['jpeg',@$opt]) };
+  is $@, '', 'writing jpeg';
+  my $ok = (-s $tmpfile) ? 1 : 0;
+  ok $ok, "File has non-zero size";
 
-  eval {$image2 = $mw->Photo('-format' => 'jpeg', -file => "testout.jpg")};
-  ok($@,'',"Error $@");
-  ok($image2->width,227,"Wrong width");
-  ok($image2->height,149,"Wrong height");
-
-  $l->configure(-image => $image2);
-  $mw->update;
-  ok($l->width,227,"Wrong width");
-  ok($l->height,149,"Wrong height");
+  eval {$image2 = $mw->Photo('-format' => 'jpeg', -file => $tmpfile)};
+  is $@, '', "loading jpeg";
+  is $image2->width, 227, "expected width";
+  is $image2->height, 149, "expected height";
+                                    
+  $l->configure(-image => $image2); 
+  $mw->update;                      
+  is $l->width, 227, "expected label width";
+  is $l->height, 149, "expected label height";
  }
 
 
-$mw->after(1000,[destroy => $mw]);
+$mw->after(500,[destroy => $mw]);
 MainLoop;
-
-END
-{
- unlink "testout.jpg" if -f "testout.jpg";
-}
