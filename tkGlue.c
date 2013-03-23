@@ -3830,10 +3830,7 @@ ClientData clientData;
      return EXPIRE((interp, "Cannot trace readonly variable"));
     }
   }
- if (!SvUPGRADE(sv, SVt_PVMG))
-  {
-   return EXPIRE((interp, "Trace SvUPGRADE failed"));
-  }
+ (void)SvUPGRADE(sv, SVt_PVMG);
 
  if (SvTYPE(sv) == SVt_PVAV)
   {

@@ -207,11 +207,7 @@ int	offset
      info.count  = 0;
      info.error  = 0;
      info.eof    = 0;
-     if (!SvUPGRADE(buf, SVt_PV))
-      {
-       RETVAL = &PL_sv_undef;
-       return;
-      }
+     (void)SvUPGRADE(buf, SVt_PV);
      SvPOK_only(buf);		/* validate pointer */
      Tcl_CreateFileHandler(fd, TCL_READABLE, read_handler, (ClientData) &info);
      do
