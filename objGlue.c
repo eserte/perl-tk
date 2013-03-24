@@ -535,12 +535,6 @@ LangString(SV *sv)
   }
 }
 
-void utf8Whoops(pTHX_ SV *objPtr)
-{
- sv_utf8_upgrade(objPtr);
- sv_dump(objPtr);
-}
-
 char *
 Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 {
@@ -563,9 +557,10 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 #ifdef SvUTF8
      if (!is_utf8_string(s,len))
       {
+     /*
        LangDebug("%s @ %d not utf8\n",__FUNCTION__,__LINE__);
        sv_dump(objPtr);
-       utf8Whoops(aTHX_ objPtr);
+     */
        s = SvPV(objPtr, len);
        if (!is_utf8_string(s,len))
         {
