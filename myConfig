@@ -225,6 +225,11 @@ if (try_compile("config/svtrv.c",  ["-I$Config{'archlibexp'}/CORE"], undef, ["-c
   $define{'HAS_REAL_SVT_RV'} = 1; # changed in perl 5.11.0, SVt_RV is since then defined as SVt_IV 
  }
 
+if (try_compile("config/copstashset.c",  ["-I$Config{'archlibexp'}/CORE"], undef, ["-c"]))
+ {
+  $define{'CAN_COPSTASH_SET_NULL'} = 1; # this seems to work since 5.17.x, and fails with older threaded perls
+ }
+
 if (!$IsWin32)
  {
   if (!try_compile("config/tod.c"))

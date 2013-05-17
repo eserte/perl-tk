@@ -4154,7 +4154,15 @@ int type;
    SV *x = NULL;
    int prefix = '?';
    name = SvPV(sv,na);
+#ifdef CAN_COPSTASH_SET_NULL
    CopSTASH_set(PL_curcop, NULL);
+#else
+#  ifdef USE_ITHREADS
+   CopSTASHPV(PL_curcop) = NULL;
+#  else
+   CopSTASH(PL_curcop) = NULL;
+#  endif
+#endif
    switch (type)
     {
      case TK_CONFIG_SCALARVAR:
