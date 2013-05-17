@@ -1404,10 +1404,9 @@ Tk::catch {$e->destroy};
 	$e->xviewMoveto(1); # should really scroll
 	$e->update;
     };
-    if (!do {
+    {
 	local $TODO;
 	TODO_xscrollcommand_problem;
-    }) {
 	like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
     }
     $e->destroy;
