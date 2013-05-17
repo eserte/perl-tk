@@ -2,7 +2,6 @@
 # -*- perl -*-
 
 #
-# $Id: $
 # Author: Slaven Rezic
 #
 
@@ -31,8 +30,6 @@ BEGIN {
 
 use TkTest qw(catch_grabs);
 
-plan tests => 13;
-
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 my $dir = tempdir(CLEANUP => 1);
@@ -43,29 +40,40 @@ if ($^O eq 'darwin') {
     $encoding = 'utf-8';
 }
 
+# Preparations. May fail on some systems, see
+# https://rt.cpan.org/Ticket/Display.html?id=75347
+my($umlautdir, $umlautgif, $umlautxpm, $umlautxbm, $eurogif);
+eval {
+    $umlautdir = catfile $dir, encode($encoding, "äöüß");
+    mkdir $umlautdir
+	or die "Cannot create $umlautdir: $!";
+
+    $umlautgif = catfile $umlautdir, encode($encoding, "äöüß.gif");
+    cp(Tk->findINC("Xcamel.gif"), $umlautgif)
+	or die "Can't copy Xcamel.gif to $umlautgif: $!";
+
+    $umlautxpm = catfile $umlautdir, encode($encoding, "èé.xpm");
+    cp(Tk->findINC("Camel.xpm"), $umlautxpm)
+	or die "Can't copy Camel.xpm to $umlautxpm: $!";
+    utf8::upgrade($umlautxpm); # upgrade to utf8 it before Perl/Tk...
+
+    $umlautxbm = catfile $umlautdir, encode($encoding, "ÈÉ.xbm");
+    cp(Tk->findINC("Tk.xbm"), $umlautxbm)
+	or die "Can't copy Tk.xbm to $umlautxbm: $!";
+
+    $eurogif = catfile $umlautdir, "\xe2\x82\xac.gif"; # the utf8-representation of \x{20ac} (Euro sign)
+    cp(Tk->findINC("Xcamel.gif"), $eurogif)
+	or die "Can't copy Xcamel.gif to $eurogif: $!";
+};
+if ($@) {
+    plan skip_all => $@;
+    exit 0;
+}
+
+plan tests => 13;
+
 my $mw = tkinit;
 $mw->geometry("+10+10");
-
-my $umlautdir = catfile $dir, encode($encoding, "äöüß");
-mkdir $umlautdir
-    or die "Cannot create $umlautdir: $!";
-
-my $umlautgif = catfile $umlautdir, encode($encoding, "äöüß.gif");
-cp(Tk->findINC("Xcamel.gif"), $umlautgif)
-    or die "Can't copy Xcamel.gif to $umlautgif: $!";
-
-my $umlautxpm = catfile $umlautdir, encode($encoding, "èé.xpm");
-cp(Tk->findINC("Camel.xpm"), $umlautxpm)
-    or die "Can't copy Camel.xpm to $umlautxpm: $!";
-utf8::upgrade($umlautxpm); # upgrade to utf8 it before Perl/Tk...
-
-my $umlautxbm = catfile $umlautdir, encode($encoding, "ÈÉ.xbm");
-cp(Tk->findINC("Tk.xbm"), $umlautxbm)
-    or die "Can't copy Tk.xbm to $umlautxbm: $!";
-
-my $eurogif = catfile $umlautdir, "\xe2\x82\xac.gif"; # the utf8-representation of \x{20ac} (Euro sign)
-cp(Tk->findINC("Xcamel.gif"), $eurogif)
-    or die "Can't copy Xcamel.gif to $eurogif: $!";
 
 ######################################################################
 # Various image formats
