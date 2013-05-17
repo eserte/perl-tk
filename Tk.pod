@@ -859,4 +859,7 @@ Nick Ing-Simmons
 
 L<perl>, L<wish(1)>.
 
+Alternative Perl modules implementing the Tk toolkit: L<Tkx>,
+L<Tcl::Tk>.
+
 =cut
