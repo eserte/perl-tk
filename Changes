@@ -1,7 +1,47 @@
+Tk-804.030_500 release (2013-05-18)
+----------------------
+
 Incompatible changes
  The Tk::Text::Contents() method does not return an extra newline
  anymore (RT #83124). The version number of Tk::Text was incremented
  to 4.029 and may be used to detect the change.
+
+Fixes
+ RT #78824: fixed compilation under threaded bleadperl (5.17.x)
+
+ Fix for internal magic handling, needed for perl 5.17.2 and newer.
+
+ Fixed myConfig issue with perl 5.17.x.
+
+ SvUPGRADE() is no longer an expression since perl 5.17.7.
+
+ Off-by-one error in Tk::Table::clear method (problem spotted by David
+ Overeem).
+
+Tests
+ RT #75347: skip unicode.t under some circumstances (e.g. problematic
+ locales on Windows systems)
+
+ RT #82664: fixed mismatched test count in entry.t
+
+ Fixed Subwidget call in dirtree.t test.
+
+ A couple of new test cases, conversions to Test::More...
+
+Documentation
+ RT #79381: mention Tkx and Tcl::Tk
+
+ Fixed return value for wrapper() in Tk::Wm Pod.
+
+ Moved Tk::DragDrop Pods.
+
+ "Tk::" prefix was missing in a number of Pods (original problem
+ report by Fabien Dupont).
+
+Code cleanup
+ Removed some unused static functions from tkGlue.c
+
+ Simplified utf8 repair code in Tcl_GetStringFromObj.
 
 Tk-804.030 release (2011-10-20)
 ------------------
