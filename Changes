@@ -1,3 +1,11 @@
+Tk-804.030_501 release (2013-05-18)
+----------------------
+
+Fixes
+ Should compile again with older perls: SvNV_nomg is not available with
+ perls older than 5.13.2, and CopSTASH_set(..., NULL) is not possible
+ with threaded 5.16.x and older.
+
 Tk-804.030_500 release (2013-05-18)
 ----------------------
 
