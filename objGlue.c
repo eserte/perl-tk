@@ -1520,7 +1520,11 @@ Tcl_ObjMagic(Tcl_Obj *obj,int add)
     }
    else if (iv->type == &tclDoubleType)
     {
+#ifdef HAS_SVNV_NOMG
      iv->internalRep.doubleValue = SvNV_nomg(obj);
+#else
+     iv->internalRep.doubleValue = SvNV(obj);
+#endif
     }
    return iv;
   }
