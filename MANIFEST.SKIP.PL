@@ -10,6 +10,7 @@ sub wanted
 {
  my $s = $File::Find::name;
  $s =~ s#^\./##;
+ return if $s =~ m#^\.pc/#; # quilt state dir
  $files{$s} = 1 if (-f $_);
  if (/\.xs$/)
   {
