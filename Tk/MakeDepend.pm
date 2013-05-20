@@ -246,9 +246,16 @@ sub command_line
      warn "Ignoring $1\n";
     }
   }
- # force /usr/include to be last element of @include
- push @include, $Config{'usrinc'}
-   if (defined $Config{'usrinc'} and $Config{'usrinc'} ne '');
+ # force /usr/include (and other system directories) to be last element of @include
+ if ($Config{ccname} eq 'gcc')
+  {
+   push @include, parse_gcc_inc_search_list();
+  }
+ else
+  {
+   push @include, $Config{'usrinc'}
+     if (defined $Config{'usrinc'} and $Config{'usrinc'} ne '');
+  }
  # warn "Include:@include\n";
  while (@files)
   {
@@ -285,6 +292,49 @@ sub command_line
    $data .= "$str\n";
   }
  return $data;
+}
+
+sub parse_gcc_inc_search_list
+{
+ our @GCC_INC_SEARCH_LIST;
+ return @GCC_INC_SEARCH_LIST if @GCC_INC_SEARCH_LIST;
+
+ require File::Spec;
+ my $cmd = "$Config{cc} -xc -E -v -";
+ my @inc;
+ eval
+  {
+   open my $fh, "-|", "$cmd 2>&1 <".File::Spec->devnull
+     or die "Error while running $cmd: $!";
+
+   my $in_search_list;
+   while(<$fh>)
+    {
+     if (/^#include <\.\.\.> search starts here:/)
+      {
+       $in_search_list = 1;
+      }
+     elsif ($in_search_list)
+      {
+       last if /^End of search list/;
+       chomp;
+       s/^\s+//;
+       push @inc, $_;
+      }
+    }
+  };
+ if ($@)
+  {
+   warn $@;
+  }
+ if (!@inc)
+  {
+   # Fallback: add /usr/include
+   @inc = $Config{'usrinc'}
+     if (defined $Config{'usrinc'} and $Config{'usrinc'} ne '');
+  }
+ @GCC_INC_SEARCH_LIST = @inc;
+ @inc;
 }
 
 1;
