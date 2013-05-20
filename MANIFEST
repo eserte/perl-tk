@@ -28,6 +28,7 @@ Compound/Compound.xs
 Compound/compound_demo
 Compound/Makefile.PL
 config/Ksprintf.c
+config/copstashset.c		Test for changed CopSTASH_set macro in perl5.17.x
 config/perlrx.c			Test for changed regexp structure in perl5.9.x
 config/pmop.c			Test for changed pmop structure in perl5.9.x
 config/pregcomp2.c		Test for changed pregcomp call in perl5.9.x
