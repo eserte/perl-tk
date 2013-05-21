@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.015'; # was: sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.016';
 
 use AutoLoader;
 use base qw(Tk::Frame);

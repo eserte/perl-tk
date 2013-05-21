@@ -11,8 +11,7 @@ $SIG{__DIE__} = \&Carp::confess;
 
 
 use vars qw($VERSION);
-#$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
-$VERSION = '4.014';
+$VERSION = '4.015';
 
 sub scan_file;
 
