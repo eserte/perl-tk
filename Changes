@@ -1,3 +1,24 @@
+Tk-804.030_502 release (2013-05-21)
+----------------------
+
+Fixes
+ The CopSTASH_set fix did not work in 804.030_501 because of a
+ missing file in the tarball. Now fixed.
+
+ Tk::MakeDepend parses gcc's inc search list now and does not rely
+ anymore on $Config{usrinc}. This helps when include files are
+ partially in "multiarch" subdirectories (e.g. in Debian/sid) or when
+ $Config{usrinc} is incorrect (e.g. in ActivePerl+gcc builds).
+ RT #85407 and http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=708624
+
+ Helping Debian's build process by skipping the quilt state directory
+ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=708635
+
+ Improving build process for ActivePerl+gcc (RT #74036); see also
+ README-ActiveState.txt.
+
+ Use pkg-config for determining libpng cflags and libs.
+
 Tk-804.030_501 release (2013-05-18)
 ----------------------
 
