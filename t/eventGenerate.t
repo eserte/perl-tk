@@ -18,6 +18,7 @@ plan tests => 2;
 
 sub main {
     my $mw = MainWindow->new;
+    $mw->geometry('+10+10');
     my $w = $mw->Label(-text => 'bob');
     $w->bind('<ButtonPress-1>' => \&bump_flag);
 
