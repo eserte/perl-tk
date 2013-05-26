@@ -11,6 +11,7 @@ my $zlib = "libz$l";
 
 foreach my $file (qw(zlib/Makefile.PL libpng/Makefile.PL))
  {
+  next unless -f $file;
   chmod(0666,$file) unless -w $file;
   unlink($file);
  }
@@ -43,12 +44,6 @@ if ($Tk::MMtry::VERSION ge '4.007' &&
 else
  {
   my $ok = 1;
-  foreach my $file ("libpng/Makefile.PL","zlib/Makefile.PL")
-   {
-    next unless -f $file;
-    chmod(0666,$file);
-    unlink($file);
-   }
   unless (copy("Makefile.libpng.maybe","libpng/Makefile.PL"))
    {
     warn "Cannot copy Makefile.libpng.maybe => libpng/Makefile.PL ($!)";
