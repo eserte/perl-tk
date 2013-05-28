@@ -2314,9 +2314,19 @@ sub resetGridInfo {
     # can cause all sorts of problems.  The "wm positionfrom" command is
     # needed so that the window manager doesn't ask the user to
     # manually position the window when it is re-mapped.
-    $mw->withdraw;
-    $mw->positionfrom('user');
-    $mw->deiconify;
+    #
+    # On the other hand, calling these lines seem to cause strange
+    # test failures with almost all window managers. The same lines of
+    # code in Tcl/Tk seem also to be problematic. So run these lines only
+    # for mwm
+    if (eval {
+	require Tk::Mwm;
+	$mw->mwm('ismwmrunning');
+    }) {
+	$mw->withdraw;
+	$mw->positionfrom('user');
+	$mw->deiconify;
+    }
 }
 
 # Procedure that creates a second listbox for checking things related
