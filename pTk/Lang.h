@@ -4,10 +4,6 @@
 #define STATIC_BUILD
 
 
-#ifdef bool
-#undef bool
-#endif
-
 #include "tkConfig.h"
 #define TCL_NO_DEPRECATED
 
