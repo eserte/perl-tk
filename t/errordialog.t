@@ -43,6 +43,12 @@ $mw->after(100, sub {
 	       second_error();
 	   });
 
+$mw->after(20*1000, sub {
+	       if (Tk::Exists($mw)) {
+		   $mw->destroy;
+		   fail "Timeout - destroyed main window";
+	       }
+	   });
 MainLoop;
 
 sub second_error {
