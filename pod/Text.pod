@@ -260,12 +260,16 @@ I<imageName>.
 This form generates an error if there is no embedded image
 by the given name.
 
+=back
+
 If the I<base> could match more than one of the above forms, such
 as a I<mark> and I<imageName> both having the same value, then
 the form earlier in the above list takes precedence.
 If modifiers follow the base index, each one of them must have one
 of the forms listed below.  Keywords such as B<chars> and B<wordend>
 may be abbreviated as long as the abbreviation is unambiguous.
+
+=over 4
 
 =item B<+ >I<count>B< chars>
 
