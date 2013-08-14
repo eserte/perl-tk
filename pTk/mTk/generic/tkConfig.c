@@ -34,11 +34,16 @@
 #include "tkOption.m"
 
 /*
- * The following definition is an AssocData key used to keep track of
- * all of the option tables that have been created for an interpreter.
+ * The following definition keeps track of all of
+ * the option tables that have been created for a thread.
  */
 
-#define OPTION_HASH_KEY "TkOptionTable"
+typedef struct {
+    int initialized;		/* 0 means table below needs initializing. */
+    Tcl_HashTable hashTable;
+} ThreadSpecificData;
+static Tcl_ThreadDataKey dataKey;
+
 
 /*
  * The following two structures are used along with Tk_OptionSpec
@@ -106,8 +111,6 @@ typedef struct OptionTable {
 					 * template in the chain. */
     int numOptions;			/* The number of items in the options
 					 * array below. */
-    int refCount2; /* Reference counter for controlling the freeing
-                    * of the memory occupied by this OptionTable */
     Option options[1];			/* Information about the individual
 					 * options in the table.  This must be
 					 * the last field in the structure:
@@ -123,8 +126,6 @@ static int		DoObjConfig _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *recordPtr, Option *optionPtr,
 			    Tcl_Obj *valuePtr, Tk_Window tkwin,
 			    Tk_SavedOption *savePtr));
-static void		DestroyOptionHashTable _ANSI_ARGS_((
-			    ClientData clientData, Tcl_Interp *interp));
 static void		FreeResources _ANSI_ARGS_((Option *optionPtr,
 			    Tcl_Obj *objPtr, char *internalPtr,
 			    Tk_Window tkwin));
@@ -138,6 +139,7 @@ static Option *		GetOptionFromObj _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *objPtr, OptionTable *tablePtr));
 static int		ObjectIsEmpty _ANSI_ARGS_((Tcl_Obj *objPtr));
 static void		FreeOptionInternalRep _ANSI_ARGS_((Tcl_Obj *objPtr));
+static void		DupOptionInternalRep _ANSI_ARGS_((Tcl_Obj *, Tcl_Obj *));
 static int		SetOptionFromAny _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *objPtr));
 
@@ -151,7 +153,7 @@ static int		SetOptionFromAny _ANSI_ARGS_((Tcl_Interp *interp,
 Tcl_ObjType tkOptionObjType = {
     "option",				/* name */
     FreeOptionInternalRep,		/* freeIntRepProc */
-    (Tcl_DupInternalRepProc *) NULL,	/* dupIntRepProc */
+    DupOptionInternalRep,		/* dupIntRepProc */
     (Tcl_UpdateStringProc *) NULL,	/* updateStringProc */
     SetOptionFromAny			/* setFromAnyProc */
 };
@@ -182,31 +184,26 @@ Tk_CreateOptionTable(interp, templatePtr)
     CONST Tk_OptionSpec *templatePtr;	/* Static information about the
 					 * configuration options. */
 {
-    Tcl_HashTable *hashTablePtr;
     Tcl_HashEntry *hashEntryPtr;
     int newEntry;
     OptionTable *tablePtr;
     CONST Tk_OptionSpec *specPtr, *specPtr2;
     Option *optionPtr;
     int numOptions, i;
+    ThreadSpecificData *tsdPtr =
+	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     /*
-     * We use an AssocData value in the interpreter to keep a hash
-     * table of all the option tables we've created for this application.
-     * This is used for two purposes.  First, it allows us to share the
-     * tables (e.g. in several chains) and second, we use the deletion
-     * callback for the AssocData to delete all the option tables when
-     * the interpreter is deleted.  The code below finds the hash table
-     * or creates a new one if it doesn't already exist.
+     * We use an TSD in the thread to keep a hash table of
+     * all the option tables we've created for this application. This is
+     * used for allowing us to share the tables (e.g. in several chains).
+     * The code below finds the hash table or creates a new one if it
+     * doesn't already exist.
      */
 
-    hashTablePtr = (Tcl_HashTable *) Tcl_GetAssocData(interp, OPTION_HASH_KEY,
-	    NULL);
-    if (hashTablePtr == NULL) {
-	hashTablePtr = (Tcl_HashTable *) ckalloc(sizeof(Tcl_HashTable));
-	Tcl_InitHashTable(hashTablePtr, TCL_ONE_WORD_KEYS);
-	Tcl_SetAssocData(interp, OPTION_HASH_KEY, DestroyOptionHashTable,
-		(ClientData) hashTablePtr);
+    if (!tsdPtr->initialized) {
+	Tcl_InitHashTable(&tsdPtr->hashTable, TCL_ONE_WORD_KEYS);
+	tsdPtr->initialized = 1;
     }
 
     /*
@@ -214,7 +211,7 @@ Tk_CreateOptionTable(interp, templatePtr)
      * so, just reuse the existing table.
      */
 
-    hashEntryPtr = Tcl_CreateHashEntry(hashTablePtr, (char *) templatePtr,
+    hashEntryPtr = Tcl_CreateHashEntry(&tsdPtr->hashTable, (char *) templatePtr,
 	    &newEntry);
     if (!newEntry) {
 	tablePtr = (OptionTable *) Tcl_GetHashValue(hashEntryPtr);
@@ -234,7 +231,6 @@ Tk_CreateOptionTable(interp, templatePtr)
     tablePtr = (OptionTable *) (ckalloc(sizeof(OptionTable)
 	    + ((numOptions - 1)  * sizeof(Option))));
     tablePtr->refCount = 1;
-    tablePtr->refCount2 = 1;
     tablePtr->hashEntryPtr = hashEntryPtr;
     tablePtr->nextPtr = NULL;
     tablePtr->numOptions = numOptions;
@@ -378,64 +374,7 @@ Tk_DeleteOptionTable(optionTable)
 	}
     }
     Tcl_DeleteHashEntry(tablePtr->hashEntryPtr);
-    tablePtr->refCount2--;
-    if (tablePtr->refCount2 <= 0) {
-	ckfree((char *) tablePtr);
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * DestroyOptionHashTable --
- *
- *	This procedure is the deletion callback associated with the
- *	AssocData entry created by Tk_CreateOptionTable.  It is
- *	invoked when an interpreter is deleted, and deletes all of
- *	the option tables associated with that interpreter.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The option hash table is destroyed along with all of the
- *	OptionTable structures that it refers to.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-DestroyOptionHashTable(clientData, interp)
-    ClientData clientData;	/* The hash table we are destroying */
-    Tcl_Interp *interp;		/* The interpreter we are destroying */
-{
-    Tcl_HashTable *hashTablePtr = (Tcl_HashTable *) clientData;
-    Tcl_HashSearch search;
-    Tcl_HashEntry *hashEntryPtr;
-    OptionTable *tablePtr;
-
-    for (hashEntryPtr = Tcl_FirstHashEntry(hashTablePtr, &search);
-	    hashEntryPtr != NULL;
-	    hashEntryPtr = Tcl_NextHashEntry(&search)) {
-	tablePtr = (OptionTable *) Tcl_GetHashValue(hashEntryPtr);
-
-	/*
-	 * The following statements do two tricky things:
-	 * 1. They ensure that the option table is deleted, even if
-	 *    there are outstanding references to it.
-	 * 2. They ensure that Tk_DeleteOptionTable doesn't delete
-	 *    other tables chained from this one; we'll do it when
-	 *    we come across the hash table entry for the chained
-	 *    table (in fact, the chained table may already have
-	 *    been deleted).
-	 */
-
-	tablePtr->refCount = 1;
-	tablePtr->nextPtr = NULL;
-	Tk_DeleteOptionTable((Tk_OptionTable) tablePtr);
-    }
-    Tcl_DeleteHashTable(hashTablePtr);
-    ckfree((char *) hashTablePtr);
+    ckfree((char *) tablePtr);
 }
 
 /*
@@ -1240,7 +1179,7 @@ GetOptionFromObj(interp, objPtr, tablePtr)
     objPtr->internalRep.twoPtrValue.ptr1 = (VOID *) tablePtr;
     objPtr->internalRep.twoPtrValue.ptr2 = (VOID *) bestPtr;
     TclObjSetType(objPtr,&tkOptionObjType);
-    tablePtr->refCount2++;
+    tablePtr->refCount++;
     return bestPtr;
 
     error:
@@ -1344,15 +1283,34 @@ static void
 FreeOptionInternalRep(objPtr)
     register Tcl_Obj *objPtr;	/* Object whose internal rep to free. */
 {
-    register OptionTable *tablePtr = (OptionTable *) objPtr->internalRep.twoPtrValue.ptr1;
+    register Tk_OptionTable tablePtr = (Tk_OptionTable) objPtr->internalRep.twoPtrValue.ptr1;
 
-    tablePtr->refCount2--;
-    if (tablePtr->refCount2 <= 0) {
-	ckfree((char *)tablePtr);
-    }
+    Tk_DeleteOptionTable(tablePtr);
     objPtr->typePtr = NULL;
     objPtr->internalRep.twoPtrValue.ptr1 = NULL;
     objPtr->internalRep.twoPtrValue.ptr2 = NULL;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * DupOptionInternalRep --
+ *
+ *	When a cached option object is duplicated, this is called to update the
+ *	internal reps.
+ *
+ *---------------------------------------------------------------------------
+ */
+
+static void
+DupOptionInternalRep(srcObjPtr, dupObjPtr)
+    Tcl_Obj *srcObjPtr;		/* The object we are copying from. */
+    Tcl_Obj *dupObjPtr;		/* The object we are copying to. */
+{
+    register OptionTable *tablePtr = (OptionTable *) srcObjPtr->internalRep.twoPtrValue.ptr1;
+    tablePtr->refCount++;
+    dupObjPtr->typePtr = srcObjPtr->typePtr;
+    dupObjPtr->internalRep = srcObjPtr->internalRep;
 }
 
 /*
@@ -2376,15 +2334,14 @@ TkDebugConfig(interp, table)
 					 * exist in the interpreter anymore. */
 {
     OptionTable *tablePtr = (OptionTable *) table;
-    Tcl_HashTable *hashTablePtr;
     Tcl_HashEntry *hashEntryPtr;
     Tcl_HashSearch search;
     Tcl_Obj *objPtr;
+    ThreadSpecificData *tsdPtr =
+	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     objPtr = Tcl_NewObj();
-    hashTablePtr = (Tcl_HashTable *) Tcl_GetAssocData(interp, OPTION_HASH_KEY,
-	    NULL);
-    if (hashTablePtr == NULL) {
+    if (!tablePtr || !tsdPtr->initialized) {
 	return objPtr;
     }
 
@@ -2393,7 +2350,7 @@ TkDebugConfig(interp, table)
      * one we want still is valid.
      */
 
-    for (hashEntryPtr = Tcl_FirstHashEntry(hashTablePtr, &search);
+    for (hashEntryPtr = Tcl_FirstHashEntry(&tsdPtr->hashTable, &search);
 	    hashEntryPtr != NULL;
 	    hashEntryPtr = Tcl_NextHashEntry(&search)) {
 	if (tablePtr == (OptionTable *) Tcl_GetHashValue(hashEntryPtr)) {
