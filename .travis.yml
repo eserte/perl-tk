@@ -1,0 +1,15 @@
+language: perl
+perl:
+  - "5.18"
+  - "5.16"
+  - "5.14"
+  - "5.12"
+  - "5.10"
+  - "5.8"
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq xvfb twm libx11-dev libfreetype6-dev libxft-dev
+ - Xvfb :123 &
+ - (sleep 10; env DISPLAY=:123 twm) &
+env:
+ - DISPLAY=:123
