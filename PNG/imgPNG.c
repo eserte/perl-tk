@@ -490,6 +490,24 @@ static int CommonReadPNG(png_ptr, format, imageHandle, destX, destY,
 	png_set_expand(png_ptr);
     }
 
+#if defined(PNG_sRGB_SUPPORTED) || defined(PNG_gAMA_SUPPORTED)
+#if defined(PNG_sRGB_SUPPORTED)
+    if (png_get_sRGB(png_ptr, info_ptr, &intent)) {
+	png_set_sRGB(png_ptr, info_ptr, intent);
+    } else {
+#endif
+#if defined(PNG_gAMA_SUPPORTED)
+	double gamma;
+	if (!png_get_gAMA(png_ptr, info_ptr, &gamma)) {
+	    gamma = 0.45455;
+	}
+	png_set_gamma(png_ptr, 1.0, gamma);
+#endif
+#if defined(PNG_sRGB_SUPPORTED)
+    }
+#endif
+#endif
+
     png_read_update_info(png_ptr,info_ptr);
     block.pixelSize = png_get_channels(png_ptr, info_ptr);
     block.pitch = png_get_rowbytes(png_ptr, info_ptr);
@@ -510,24 +528,6 @@ static int CommonReadPNG(png_ptr, format, imageHandle, destX, destY,
 	/* without alpha channel */
 	block.offset[3] = 0;
     }
-
-#if defined(PNG_sRGB_SUPPORTED) || defined(PNG_gAMA_SUPPORTED)
-#if defined(PNG_sRGB_SUPPORTED)
-    if (png_get_sRGB(png_ptr, info_ptr, &intent)) {
-	png_set_sRGB(png_ptr, info_ptr, intent);
-    } else {
-#endif
-#if defined(PNG_gAMA_SUPPORTED)
-	double gamma;
-	if (!png_get_gAMA(png_ptr, info_ptr, &gamma)) {
-	    gamma = 0.45455;
-	}
-	png_set_gamma(png_ptr, 1.0, gamma);
-#endif
-#if defined(PNG_sRGB_SUPPORTED)
-    }
-#endif
-#endif
 
     png_data= (char **) ckalloc(sizeof(char *) * info_height +
 	    info_height * block.pitch);
