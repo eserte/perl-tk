@@ -62,4 +62,12 @@ Debian Linux:
 The libx11-dev and x-dev packages are necessary to compile Perl/Tk.
 
 The libfreetype6-dev, libxrender-dev and libxft-dev packages are
-necessary to compile with XFT=1.
+necessary to compile with freetype support (XFT=1).
+
+----------------------------------------------------------------------
+CentOS, RedHat:
+
+The libX11-devel package is necessary to compile Perl/Tk.
+
+The libXft-devel package is necessary to compile with freetype support
+(XFT=1).
