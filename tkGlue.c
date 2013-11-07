@@ -4046,7 +4046,18 @@ ClientData clientData;
    if (!SvMAGIC(sv))
     {
      SvMAGICAL_off(sv);
-     SvFLAGS(sv) |= (SvFLAGS(sv) & (SVp_IOK|SVp_NOK|SVp_POK)) >> PRIVSHIFT;
+     if (SvFLAGS(sv) & (SVp_IOK|SVp_NOK) == (SVp_IOK|SVp_NOK))
+      {
+       /* RT #90077: if both SVp_IOK and SVp_NOK are set, then the
+	* SVf_IOK must not be set, otherwise arithmetic operations
+	* may use the wrong integer value
+	*/
+       SvFLAGS(sv) |= (SvFLAGS(sv) & (SVp_NOK|SVp_POK)) >> PRIVSHIFT;
+      }
+     else
+      {
+       SvFLAGS(sv) |= (SvFLAGS(sv) & (SVp_IOK|SVp_NOK|SVp_POK)) >> PRIVSHIFT;
+      }
     }
   }
 }
