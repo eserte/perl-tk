@@ -16,10 +16,6 @@ CONFIGURE/BUILD
 
     Use native Win32 GUI calls:
 
-        perl Makefile.PL
-
-    or
-
         perl Makefile.PL MSWin32
 
     Use X11 client libraries (and requires a X server):
@@ -33,6 +29,10 @@ CONFIGURE/BUILD
               Your PATH must include the DLL directory, /usr/X11R6/bin
 
         perl Makefile.PL x
+
+    or
+
+        perl Makefile.PL
 
     make
 
