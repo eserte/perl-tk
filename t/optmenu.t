@@ -5,7 +5,7 @@ use Test;
 
 BEGIN
   {
-   plan test => 24;
+   plan test => 25;
   };
 
 eval { require Tk };
@@ -67,6 +67,9 @@ ok($opt2menu ne "", 1, "can't get menu from Optionmenu");
 ok($opt2menu->entrycget("last", -label), "Label 20", "wrong label");
 
 ok($ {$opt2->cget(-textvariable)}, "Label $foo2", "wrong label");
+
+eval { $opt->eventGenerate('<<MenuSelect>>') };
+ok($@, "", "problem sending a MenuSelect event");
 
 #Tk::MainLoop();
 
