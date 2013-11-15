@@ -18,7 +18,7 @@ use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
 
 sub checked_test_harness ($@) {
-    my($skip_test, @test_harness_args) = @_;
+    my($skip_test_dir, @test_harness_args) = @_;
 
     require ExtUtils::Command::MM;
     # In case of cygwin, use'ing Tk before forking (which is done by
@@ -37,18 +37,18 @@ sub checked_test_harness ($@) {
     }
 
     if (defined $Tk::platform && $Tk::platform eq 'unix') { # undef for cygwin+MSWin32, because Tk not yet loaded
-	my $have_to_skip;
+	my $skip_all_test;
 	my $mw = eval { MainWindow->new() };
 	if (!Tk::Exists($mw)) {
-	    $have_to_skip = 1;
+	    $skip_all_test = "skip_all_mw.t";
 	} else {
 	    my $l = eval { $mw->Label(-text => "test") }; # will allocate a font, which may fail
 	    if (!Tk::Exists($l)) {
-		$have_to_skip = 1;
+		$skip_all_test = "skip_all_font.t";
 	    }
 	}
-	if ($have_to_skip) {
-	    local @ARGV = $skip_test;
+	if ($skip_all_test) {
+	    local @ARGV = "$skip_test_dir/$skip_all_test";
 	    return ExtUtils::Command::MM::test_harness(@test_harness_args);
 	}
 	$mw->destroy;
