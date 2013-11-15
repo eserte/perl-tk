@@ -244,7 +244,7 @@ typedef struct GridStruct {
     TixFont font;		/* Default font used by the DItems. */
 
     /* Text drawing */
-    Cursor cursor;		/* Current cursor for window, or None. */
+    Tk_Cursor cursor;		/* Current cursor for window, or None. */
 
     /* For highlights */
     int highlightWidth;		/* Width in pixels of highlight to draw
