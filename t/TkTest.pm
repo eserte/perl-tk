@@ -37,8 +37,17 @@ sub checked_test_harness ($@) {
     }
 
     if (defined $Tk::platform && $Tk::platform eq 'unix') { # undef for cygwin+MSWin32, because Tk not yet loaded
+	my $have_to_skip;
 	my $mw = eval { MainWindow->new() };
 	if (!Tk::Exists($mw)) {
+	    $have_to_skip = 1;
+	} else {
+	    my $l = eval { $mw->Label(-text => "test") }; # will allocate a font, which may fail
+	    if (!Tk::Exists($l)) {
+		$have_to_skip = 1;
+	    }
+	}
+	if ($have_to_skip) {
 	    local @ARGV = $skip_test;
 	    return ExtUtils::Command::MM::test_harness(@test_harness_args);
 	}
