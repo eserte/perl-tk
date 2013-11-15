@@ -32,6 +32,7 @@
 # * metacity 2.16.3
 # * metacity 2.10.3 (even more failures)
 # * fvwm 2.5.18
+# * fvwm 2.6.5
 # * blackbox 0.70.1
 # * KWin: 3.0
 # * Xfwm4: 4.2.3.2
@@ -68,6 +69,7 @@ my $kwin_problems = defined $wm_name && $wm_name eq 'KWin';
 my $xfwm4_problems = defined $wm_name && $wm_name eq 'Xfwm4';
 my $macosx_x11_problems = $Tk::platform eq 'unix' && $^O eq 'darwin';
 my $fluxbox_problems = defined $wm_name && $wm_name eq 'Fluxbox';
+my $fvwm_problems = defined $wm_name && $wm_name eq 'FVWM';
 
 my $poswin = 1;
 my $netwm = 0;
@@ -698,6 +700,7 @@ stdWindow;
     $mw->idletasks;
     $t->withdraw;
     $t->deiconify;
+    if ($fvwm_problems && !$t->ismapped) { $t->deiconify }
     ok($t->ismapped,
        q{a window that has already been mapped should be mapped by deiconify()});
 }
@@ -2332,6 +2335,7 @@ SKIP: {
     $mw->update;
     $t->withdraw;
     $t->state("normal");
+    if ($fvwm_problems && $t->state ne 'normal') { $t->deiconify }
     is($t->state, "normal",
        q{state change after map, normal});
 }
@@ -2343,6 +2347,7 @@ SKIP: {
     $mw->update;
     $t->withdraw;
     $t->deiconify;
+    if ($fvwm_problems && $fvwm_problems && $t->state ne 'normal') { $t->deiconify }
     is($t->state, "normal",
        q{state change after map, normal});
 }
@@ -2420,6 +2425,7 @@ SKIP: {
     is($t->state, "withdrawn");
     is($t->ismapped, 0);
     $t->deiconify;
+    if ($fvwm_problems && $t->state ne 'normal') { $t->deiconify }
     is($t->state, "normal");
     is($t->ismapped, 1);
 }
