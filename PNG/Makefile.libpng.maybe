@@ -5,6 +5,7 @@ use Config;
 use File::Copy;
 
 chmod(0666,'Makefile');
+unlink('Makefile');
 
 unless (try_configure())
  {
@@ -86,8 +87,10 @@ sub try_configure
        $ENV{CFLAGS} =~ s{-arch \S+}{}g;
    }
    system(sh => "./configure");
-   open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
-   print $fh <<'EOF';
+   if ($? == 0 && -s "Makefile")
+    {
+     open my $fh, ">>", "Makefile" or die "Can't write to Makefile: $!";
+     print $fh <<'EOF';
 
 libpng.a: all
 	cp .libs/libpng.a libpng.a
@@ -99,7 +102,12 @@ clean:
 test:
 
 EOF
-   return 1;
+     return 1;
+    }
+   else
+    {
+     return 0;
+    }
   }
  return 0;
 }
