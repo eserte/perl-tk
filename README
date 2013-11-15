@@ -50,6 +50,14 @@ fontconfig config file). See also http://fontconfig.org .
 To disable this feature run the Makefile.PL
 with "perl Makefile.PL XFT=0".
 
+Note that the default fontconfig configuration may or may not include
+traditional X11 fonts. Please inspect /etc/fonts/fonts.conf or
+/usr/local/etc/fonts/fonts.conf files for the values of the <dir>
+elements. Users may add additional font directories in their
+~/.fonts.conf . See
+http://www.freedesktop.org/software/fontconfig/fontconfig-user.html
+for more information.
+
 For questions on this package try news:comp.lang.perl.tk or e-mail to
 <ptk@lists.stanford.edu> (needs registration to the mailing list) or
 <srezic@cpan.org>
