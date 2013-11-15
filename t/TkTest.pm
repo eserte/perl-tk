@@ -1,4 +1,4 @@
-# Copyright (C) 2003,2006,2007,2010 Slaven Rezic. All rights reserved.
+# Copyright (C) 2003,2006,2007,2010,2013 Slaven Rezic. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -6,11 +6,11 @@ package TkTest;
 
 use strict;
 use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
-$VERSION = '4.009';
+$VERSION = '4.010';
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair checked_test_harness);
-@EXPORT_OK = qw(catch_grabs wm_info);
+@EXPORT_OK = qw(catch_grabs wm_info set_have_fixed_font with_fixed_font);
 
 sub _is_in_path ($);
 
@@ -195,6 +195,24 @@ sub wm_info ($) {
     (name    => $wm_name,
      version => $wm_version,
     );
+}
+
+{
+    my $have_fixed_font;
+
+    sub set_have_fixed_font ($) {
+	$have_fixed_font = shift;
+    }
+
+    sub with_fixed_font (&) {
+	my $testcode = shift;
+	local $Test::Builder::Level = $Test::Builder::Level + 1;
+    SKIP:
+	{
+	    Test::More::skip("fixed courier font not available", 1) if !$have_fixed_font;
+	    $testcode->();
+	}
+    }
 }
 
 # REPO BEGIN

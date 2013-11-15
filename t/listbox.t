@@ -23,7 +23,7 @@ my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
 use FindBin;
 use lib "$FindBin::RealBin";
-use TkTest qw(is_float wm_info);
+use TkTest qw(is_float wm_info set_have_fixed_font with_fixed_font);
 
 use Getopt::Long;
 
@@ -124,7 +124,6 @@ my $skip_font_test;
     }
 }
 
-my $skip_fixed_font_test;
 {
     my $fixed_lb = $mw->$Listbox(-font => $fixed);
     my %fa = ($mw->fontActual($fixed_lb->cget(-font)),
@@ -141,13 +140,15 @@ my $skip_fixed_font_test;
 		    "-linespace"  => 13,
 		    "-fixed"      => 1,
 		   );
+    my $have_fixed_font = 1;
     while(my($key,$val) = each %expected) {
 	if (lc $val ne lc $fa{$key}) {
 	    diag "Value $key does not match: got $fa{$key}, expected $val\n" if $v;
-	    $skip_fixed_font_test = "font-related tests (fixed font not std courier)";
+	    $have_fixed_font = 0;
 	    last;
 	}
     }
+    set_have_fixed_font($have_fixed_font);
     $fixed_lb->destroy;
 }
 
@@ -862,7 +863,7 @@ SKIP: {
 	if $Listbox eq 'TextList';
 
     $lb->xview(4);
-    is_float(join(",",$lb->xview), "0.08,0.28", "Listbox xview with floats");
+    with_fixed_font { is_float(join(",",$lb->xview), "0.08,0.28", "Listbox xview with floats") };
 }
 
 eval { $lb->xview("foo") };
@@ -879,25 +880,25 @@ SKIP: {
     $lb->xview(0);
     $lb->xview(moveto => 0.4);
     $lb->update;
-    is_float(($lb->xview)[0], 0.4);
-    is_float(($lb->xview)[1], 0.6);
+    with_fixed_font { is_float(($lb->xview)[0], 0.4) };
+    with_fixed_font { is_float(($lb->xview)[1], 0.6) };
 
     $lb->xview(0);
     $lb->xview(scroll => 2, "units");
     $lb->update;
-    is_float("@{[ $lb->xview ]}", '0.04 0.24');
+    with_fixed_font { is_float("@{[ $lb->xview ]}", '0.04 0.24') };
 
     $lb->xview(30);
     $lb->xview(scroll => -1, "pages");
     $lb->update;
-    is_float("@{[ $lb->xview ]}", '0.44 0.64');
+    with_fixed_font { is_float("@{[ $lb->xview ]}", '0.44 0.64') };
 
     $lb->configure(-width => 1);
     $lb->update;
     $lb->xview(30);
     $lb->xview("scroll", -4, "pages");
     $lb->update;
-    is_float("@{[ $lb->xview ]}", '0.52 0.54');
+    with_fixed_font { is_float("@{[ $lb->xview ]}", '0.52 0.54') };
 }
 
 eval { $lb->destroy };
@@ -1181,19 +1182,17 @@ SKIP: {
 
 Tk::catch { $lb->destroy if Tk::Exists($lb) };
 $lb = $mw->$Listbox(-font => $fixed, -width => 15, -height => 20)->pack;
-SKIP: {
-    skip($skip_fixed_font_test, 2) if $skip_fixed_font_test;
-    is($lb->reqwidth, 115, "Reqwidth with fixed font");
-    is($lb->reqheight, 328, "Reqheight with fixed font");
+{
+    with_fixed_font { is($lb->reqwidth, 115, "Reqwidth with fixed font") };
+    with_fixed_font { is($lb->reqheight, 328, "Reqheight with fixed font") };
 }
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox(-font => $fixed, -width => 0, -height => 10)->pack;
 $lb->update;
-SKIP: {
-    skip($skip_fixed_font_test, 2) if $skip_fixed_font_test;
-    is($lb->reqwidth, 17);
-    is($lb->reqheight, 168);
+{
+    with_fixed_font { is($lb->reqwidth, 17) };
+    with_fixed_font { is($lb->reqheight, 168) };
 }
 
 eval { $lb->destroy };
@@ -1201,20 +1200,18 @@ $lb = $mw->$Listbox(-font => $fixed, -width => 0, -height => 10,
 		   -bd => 3)->pack;
 $lb->insert(0, "Short", "Really much longer", "Longer");
 $lb->update;
-SKIP: {
-    skip($skip_fixed_font_test, 2) if $skip_fixed_font_test;
-    is($lb->reqwidth, 138);
-    is($lb->reqheight, 170);
+{
+    with_fixed_font { is($lb->reqwidth, 138) };
+    with_fixed_font { is($lb->reqheight, 170) };
 }
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox(-font => $fixed, -width => 10, -height => 0,
 		  )->pack;
 $lb->update;
-SKIP: {
-    skip($skip_fixed_font_test, 2) if $skip_fixed_font_test;
-    is($lb->reqwidth, 80);
-    is($lb->reqheight, 24);
+{
+    with_fixed_font { is($lb->reqwidth, 80) };
+    with_fixed_font { is($lb->reqheight, 24) };
 }
 
 eval { $lb->destroy };
@@ -1222,10 +1219,9 @@ $lb = $mw->$Listbox(-font => $fixed, -width => 10, -height => 0,
 		   -highlightthickness => 0)->pack;
 $lb->insert(0, "Short", "Really much longer", "Longer");
 $lb->update;
-SKIP: {
-    skip($skip_fixed_font_test, 2) if $skip_fixed_font_test;
-    is($lb->reqwidth, 76);
-    is($lb->reqheight, 52);
+{
+    with_fixed_font { is($lb->reqwidth, 76) };
+    with_fixed_font { is($lb->reqheight, 52) };
 }
 
 eval { $lb->destroy };
@@ -1682,23 +1678,23 @@ $lb->update;
 @log = ();
 $lb->xview(qw/99/);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0.9 1");
-is_float(($lb->xview)[0], 0.9);
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0.9 1") };
+with_fixed_font { is_float(($lb->xview)[0], 0.9) };
 is(($lb->xview)[1], 1);
-is_float($log[0], "x 0.9 1");
+with_fixed_font { is_float($log[0], "x 0.9 1") };
 
 @log = ();
 $lb->xview(qw/moveto -.25/);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0 0.1");
-is_float($log[0], "x 0 0.1");
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0 0.1") };
+with_fixed_font { is_float($log[0], "x 0 0.1") };
 
 $lb->xview(qw/10/);
 $lb->update;
 @log = ();
 $lb->xview(qw/10/);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0.1 0.2");
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0.1 0.2") };
 is(scalar @log, 0);
 
 $lb->destroy;
@@ -1714,7 +1710,7 @@ $lb->xview(qw/0/);
 $lb->scan(qw/mark 10 20/);
 $lb->scan(qw/dragto/, 10-$width, 20-$height);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0.2 0.4");
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0.2 0.4") };
 is_float("@{[ $lb->yview ]}", "0.5 0.75");
 
 $lb->yview(qw/5/);
@@ -1722,13 +1718,13 @@ $lb->xview(qw/10/);
 $lb->scan(qw/mark 10 20/);
 $lb->scan(qw/dragto 20 40/);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0 0.2");
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0 0.2") };
 is_float("@{[ $lb->yview ]}", "0 0.25");
 
 $lb->scan(qw/dragto/, 20-$width, 40-$height);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0.2 0.4");
-is_float(join(',',$lb->xview), "0.2,0.4");  # just to prove it is a list
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0.2 0.4") };
+with_fixed_font { is_float(join(',',$lb->xview), "0.2,0.4") };  # just to prove it is a list
 is_float("@{[ $lb->yview ]}", "0.5 0.75");
 is_float(join(',',$lb->yview), "0.5,0.75"); # just to prove it is a list
 
@@ -1737,11 +1733,11 @@ $lb->xview(qw/moveto 1.0/);
 $lb->scan(qw/mark 10 20/);
 $lb->scan(qw/dragto 5 10/);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0.8 1");
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0.8 1") };
 is_float("@{[ $lb->yview ]}", "0.75 1");
 $lb->scan(qw/dragto/, 5+$width, 10+$height);
 $lb->update;
-is_float("@{[ $lb->xview ]}", "0.64 0.84");
+with_fixed_font { is_float("@{[ $lb->xview ]}", "0.64 0.84") };
 is_float("@{[ $lb->yview ]}", "0.25 0.5");
 
 mkPartial();
@@ -1756,12 +1752,10 @@ $lb->yview(qw/4/);
 $lb->pack;
 $lb->update;
 
-SKIP: {
-    skip($skip_fixed_font_test, 3) if $skip_fixed_font_test;
-
-    is($lb->index(q/@50,0/), 4);
-    is($lb->index(q/@50,35/), 5);
-    is($lb->index(q/@50,36/), 6);
+{
+    with_fixed_font { is($lb->index(q/@50,0/), 4) };
+    with_fixed_font { is($lb->index(q/@50,35/), 5) };
+    with_fixed_font { is($lb->index(q/@50,36/), 6) };
 }
 
 like($lb->index(q/@50,200/), qr/^\d+/);
@@ -1922,7 +1916,7 @@ $lb->update;
 $lb->delete(qw/0 end/);
 $lb->update;
 is($log[0], "x 0 1");
-like($log[1] ,qr/^x 0 0\.32258/);
+with_fixed_font { like($log[1] ,qr/^x 0 0\.32258/) };
 is($log[2], "x 0 1");
 
 @x = ();

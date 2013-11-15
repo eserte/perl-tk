@@ -20,7 +20,7 @@ use Tk::Trace;
 use Tk::Config ();
 my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
-use TkTest qw(wm_info);
+use TkTest qw(wm_info set_have_fixed_font with_fixed_font);
 
 BEGIN {
     if (!eval q{
@@ -223,6 +223,13 @@ ok(!defined $e);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed)->pack;
+{
+    # Check if the courier font is really available:
+    require Tk::Font;
+    my %fa = $e->cget(-font)->actual;
+    set_have_fixed_font($fa{'-family'} eq 'Courier' && $fa{'-size'} == -12);
+}
+
 $e->update;
 
 my $cx = $mw->fontMeasure($fixed, 'a');
@@ -243,30 +250,32 @@ is_deeply([$e->bbox(0)],[5,5,0,$cy], "Expected bbox");
 
 $e->delete(0,"end");
 $e->insert(0,"abc");
-is_deeply([$e->bbox(3)],[5+2*$cx,5,$cx,$cy]);
+with_fixed_font { is_deeply([$e->bbox(3)],[5+2*$cx,5,$cx,$cy]) };
 is_deeply([$e->bbox("end")],[$e->bbox(3)]);
 
 $e->delete(0,"end");
 $e->insert(0,"ab\x{4e4e}");
-is_deeply([$e->bbox("end")],[5+2*$cx,5,$ux,$cy], "Bbox check with unicode char (at end)");
+with_fixed_font { is_deeply([$e->bbox("end")],[5+2*$cx,5,$ux,$cy], "Bbox check with unicode char (at end)") };
 
 $e->delete(0,"end");
 $e->insert(0,"ab\x{4e4e}c");
-is_deeply([$e->bbox(3)],[5+2*$cx+$ux,5,$cx,$cy], "Bbox check with unicode char (before index)");
+with_fixed_font { is_deeply([$e->bbox(3)],[5+2*$cx+$ux,5,$cx,$cy], "Bbox check with unicode char (before index)") };
 
 $e->delete(0,"end");
 is_deeply([5,5,0,$cy],[$e->bbox("end")]);
 
 $e->delete(0,"end");
 $e->insert(0,"abcdefghij\x{4e4e}klmnop");
-is_deeply([[$e->bbox(0)],
-	   [$e->bbox(1)],
-	   [$e->bbox(10)],
-	   [$e->bbox("end")]],
-	  [[5,5,$cx,$cy],
-	   [5+$cx,5,$cx,$cy],
-	   [5+10*$cx,5,$ux,$cy],
-	   [5+$ux+15*$cx,5,$cx,$cy]], "More bbox checks with unicode char");
+with_fixed_font {
+    is_deeply([[$e->bbox(0)],
+	       [$e->bbox(1)],
+	       [$e->bbox(10)],
+	       [$e->bbox("end")]],
+	      [[5,5,$cx,$cy],
+	       [5+$cx,5,$cx,$cy],
+	       [5+10*$cx,5,$ux,$cy],
+	       [5+$ux+15*$cx,5,$cx,$cy]], "More bbox checks with unicode char")
+};
 
 eval { $e->cget };
 like($@, qr/wrong \# args: should be ".* cget option"/, "cget error message");
@@ -410,7 +419,7 @@ $e->insert(end => "This is quite a long string, in fact a ");
 $e->insert(end => "very very long string");
 $e->scan(qw(mark 30));
 $e->scan(qw(dragto 28));
-is($e->index('@0'), 2, "Index of a scrolled string");
+with_fixed_font { is($e->index('@0'), 2, "Index of a scrolled string") };
 
 eval {$e->select };
 like($@, qr/Can\'t locate(?: file)? auto\/Tk\/Entry\/select\.al/, "Invalid abbreviated method name (selection)");
@@ -515,7 +524,7 @@ eval { $e->selectionTo(2,3) };
 like($@, qr/wrong \# args: should be ".* selection to index"/);
 
 $e->xview(5);
-is_deeply([map { substr($_, 0, 8) } $e->xview],["0.053763","0.268817"], "Expected xview result");
+with_fixed_font { is_deeply([map { substr($_, 0, 8) } $e->xview],["0.053763","0.268817"], "Expected xview result") };
 
 eval { $e->xview(qw(gorp)) };
 like($@, qr/bad entry index "gorp"/, "xview error message");
@@ -523,7 +532,7 @@ like($@, qr/bad entry index "gorp"/, "xview error message");
 $e->xview(0);
 $e->icursor(10);
 $e->xview('insert');
-is_deeply([map { substr($_, 0, 7) } $e->xview],["0.10752","0.32258"]);
+with_fixed_font { is_deeply([map { substr($_, 0, 7) } $e->xview],["0.10752","0.32258"]) };
 
 eval { $e->xviewMoveto(qw(foo bar)) };
 like($@, qr/wrong \# args: should be ".* xview moveto fraction"/);
@@ -532,7 +541,7 @@ eval { $e->xview(qw(moveto foo)) };
 like($@, qr/\'foo\' isn\'t numeric/);
 
 $e->xviewMoveto(0.5);
-is_deeply([map { substr($_, 0, 7) } $e->xview],["0.50537","0.72043"]);
+with_fixed_font { is_deeply([map { substr($_, 0, 7) } $e->xview],["0.50537","0.72043"]) };
 
 eval { $e->xviewScroll(24) };
 like($@, qr/wrong \# args: should be ".* xview scroll number units\|pages"/, "xviewScroll error message");
@@ -542,12 +551,12 @@ like($@, qr/\'gorp\' isn\'t numeric/);
 
 $e->xviewMoveto(0);
 $e->xview(qw(scroll 1 pages));
-is_deeply([map { substr($_, 0, 7) } $e->xview],["0.19354","0.40860"]);
+with_fixed_font { is_deeply([map { substr($_, 0, 7) } $e->xview],["0.19354","0.40860"]) };
 
 $e->xview(qw(moveto .9));
 $e->update;
 $e->xview(qw(scroll -2 p));
-is_deeply([map { substr($_, 0, 7) } $e->xview],["0.39784","0.61290"]);
+with_fixed_font { is_deeply([map { substr($_, 0, 7) } $e->xview],["0.39784","0.61290"]) };
 
 $e->xview(30);
 $e->update;
@@ -571,7 +580,7 @@ $e->xview(-4);
 is($e->index('@0'), 0);
 
 $e->xview(300);
-is($e->index('@0'), 73);
+with_fixed_font { is($e->index('@0'), 73) };
 
 {
     $e->insert(10, "\x{4e4e}");
@@ -701,7 +710,7 @@ $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "raised")->pack;
 $e->insert(end => "0123");
 $e->update;
 is($e->index('@10'), 0, "index with raised relief");
-is($e->index('@11'), 0);
+with_fixed_font { is($e->index('@11'), 0) };
 is($e->index('@12'), 1);
 is($e->index('@13'), 1);
 
@@ -710,7 +719,7 @@ $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "flat")->pack;
 $e->insert(end => "0123");
 $e->update;
 is($e->index('@10'), 0, "index with flat relief");
-is($e->index('@11'), 0);
+with_fixed_font { is($e->index('@11'), 0) };
 is($e->index('@12'), 1);
 is($e->index('@13'), 1);
 
@@ -727,22 +736,22 @@ eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "raised", -width => 20, -highlightthickness => 3)->pack;
 $e->insert("end", "012\t45");
 $e->update;
-is($e->index('@61'), 3, "index with highlightthickness");
-is($e->index('@62'), 4);
+with_fixed_font { is($e->index('@61'), 3, "index with highlightthickness") };
+with_fixed_font { is($e->index('@62'), 4) };
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 20 -justify center -highlightthickness 3))->pack;
 $e->insert("end", "012\t45");
 $e->update;
-is($e->index('@96'), 3, "index with center justify");
-is($e->index('@97'), 4);
+with_fixed_font { is($e->index('@96'), 3, "index with center justify") };
+with_fixed_font { is($e->index('@97'), 4) };
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 20 -justify right -highlightthickness 3))->pack;
 $e->insert("end", "012\t45");
 $e->update;
-is($e->index('@131'), 3, "index with right justify");
-is($e->index('@132'), 4);
+with_fixed_font { is($e->index('@131'), 3, "index with right justify") };
+with_fixed_font { is($e->index('@132'), 4) };
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 5))->pack;
@@ -763,7 +772,7 @@ $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 10))->pack;
 $e->insert(qw(end), "01234\t67890");
 $e->update;
 $e->xview(3);
-is($e->index('@39'), 5, "index with tabulator in entry");
+with_fixed_font { is($e->index('@39'), 5, "index with tabulator in entry") };
 is($e->index('@40'), 6);
 
 SKIP: {
@@ -1072,7 +1081,7 @@ $e->delete(qw(0 end));
 $e->insert(0, "xyzzy");
 $e->update;
 $e->delete(qw(2 4));
-is($e->reqwidth, 31);
+with_fixed_font { is($e->reqwidth, 31) };
 
 eval { $e->destroy };
 
@@ -1241,7 +1250,7 @@ eval { $e->index('@xyz') };
 like($@, qr/bad entry index "\@xyz"/);
 
 is($e->index('@4'), 4);
-is($e->index('@11'), 4);
+with_fixed_font { is($e->index('@11'), 4) };
 is($e->index('@12'), 5);
 is($e->index('@' . ($e->width-6)), 8);
 is($e->index('@' . ($e->width-5)), 9);
