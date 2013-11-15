@@ -1133,6 +1133,20 @@ Tk_AllocFontFromObj(interp, tkwin, objPtr)
 	}
     }
 
+    /*
+     * Detect the system font engine going wrong and fail more gracefully.
+     */
+
+    if (fontPtr == NULL) {
+	if (new) {
+	    Tcl_DeleteHashEntry(cacheHashPtr);
+	}
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(
+		"failed to allocate font due to internal system font engine"
+		" problem", -1));
+	return NULL;
+    }
+
     fontPtr->resourceRefCount = 1;
     fontPtr->objRefCount = 1;
     fontPtr->cacheHashPtr = cacheHashPtr;
