@@ -75,7 +75,7 @@ sub try_configure
 			      |OpenBSD.amd64-openbsd
  			      |i386-freebsd
 			      |x86_64-.* # e.g. linux, dragonfly
- 			      |sun4-solaris
+ 			      |[^-]+-solaris # e.g. sun4-solaris, i86pc-solaris
  			      |IP35-irix
  			      )(?:$|-.*)
  			    }x
