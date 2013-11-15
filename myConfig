@@ -404,7 +404,8 @@ EOF
         {
           warn <<EOF;
 You probably need to install the X11 development package first.
-On Debian Linux, these are the packages libx11-dev and x-dev.
+On Debian or Ubuntu, this is the package libx11-dev.
+On CentOS, RedHat, or Fedora, this is the package libX11-devel.
 Please see README.linux for more information.
 EOF
         }

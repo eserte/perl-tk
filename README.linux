@@ -59,7 +59,7 @@ Nick Ing-Simmons 2004/03/18
 ----------------------------------------------------------------------
 Debian, Ubuntu:
 
-The libx11-dev and x-dev packages are necessary to compile Perl/Tk.
+The libx11-dev package is necessary to compile Perl/Tk.
 
 The libfreetype6-dev, libxrender-dev and libxft-dev packages are
 necessary to compile with freetype support (XFT=1).
