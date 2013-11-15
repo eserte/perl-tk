@@ -129,6 +129,11 @@ sub raiseDelay () {
     $mw->update;
 }
 
+sub raiseDelayLonger () {
+    $mw->after(2000);
+    $mw->update;
+}
+
 sub poswin ($;@) {
     if ($poswin) {
 	for (@_) {
@@ -1774,6 +1779,13 @@ eval {
 	$mw->raise;
 	$mw->update;
 	raiseDelay;
+	if ($mw->stackorder("isabove", $t)) {
+	    # Problem seen with twm on travis-ci system
+	    # and on a Mac OS X system
+	    # (http://www.cpantesters.org/cpan/report/404e4ab4-3738-11e3-850b-7bc3a04c628c)
+	    diag "Window manager too slow? Delay and retry...";
+	    raiseDelayLonger;
+	}
 	is($mw->stackorder("isabove", $t), 0,
 	   q{A normal toplevel can't be raised above an overrideredirect toplevel});
 	$t->destroy;
