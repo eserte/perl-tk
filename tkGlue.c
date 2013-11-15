@@ -4046,7 +4046,7 @@ ClientData clientData;
    if (!SvMAGIC(sv))
     {
      SvMAGICAL_off(sv);
-     if (SvFLAGS(sv) & (SVp_IOK|SVp_NOK) == (SVp_IOK|SVp_NOK))
+     if ((SvFLAGS(sv) & (SVp_IOK|SVp_NOK)) == (SVp_IOK|SVp_NOK))
       {
        /* RT #90077: if both SVp_IOK and SVp_NOK are set, then the
 	* SVf_IOK must not be set, otherwise arithmetic operations
