@@ -74,6 +74,11 @@ the widgets which were in the table are destroyed.
 The Tk::Table widget is derived from a Tk::Frame, so inherits all its
 configure options.
 
+The default focus traversal is giving the focus only to the table
+widget as a whole. To enable focus traversal into table cells (e.g. if
+there are embedded entry widgets), then the option C<-takefocus> has
+to be set to C<0>.
+
 =head1 BUGS / Snags / Possible enhancements
 
 =over 4
