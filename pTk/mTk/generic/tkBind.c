@@ -3852,12 +3852,6 @@ HandleEventGenerate(interp, mainWin, objc, objv)
     }
     event.xany.display = Tk_Display(tkwin);
 
-    if (event.xany.window == None) {
-	Tcl_SetResult(interp, "eventGenerate on window=None; before Tk_MakeWindowExist? try $w->id first",
-		TCL_STATIC);
-	return TCL_ERROR;
-    }
-
     flags = flagArray[event.xany.type];
     if (flags & (KEY_BUTTON_MOTION_VIRTUAL)) {
 	event.xkey.state = pat.needMods;

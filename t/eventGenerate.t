@@ -37,13 +37,13 @@ sub bump_flag {
 sub event_test {
     my ($w, $early) = @_;
     $flag = 0;
-    my $got = eval {
+    my $got = do {
         $w->eventGenerate('<ButtonPress-1>');
         "flag=$flag";
-    } || "fail:$@";
+    };
 
     if ($early) {
-        like($got, qr{fail:eventGenerate on window=None}, 'early event should fail');
+        is($got, 'flag=0', 'early event is ineffective');
     } else {
         is($got, 'flag=1', 'late event should bump_flag');
     }
