@@ -2098,8 +2098,10 @@ Tk/cbxarrow.xbm
 Tk/Checkbutton.pm
 Tk/Clipboard.pm
 Tk/CmdLine.pm
+Tk/ColorDialog.pm
 Tk/ColorEdit.xpm
 Tk/ColorEditor.pm
+Tk/ColorSelect.pm
 Tk/Configure.pm
 Tk/Credits			Credits for .gif files
 Tk/Derived.pm
