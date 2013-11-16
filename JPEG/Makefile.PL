@@ -41,7 +41,7 @@ sub MY::test_via_harness
 {
  my($self, $perl, $tests) = @_;
  qq{\t$perl "-I../t" "-MTkTest" }.
- qq{"-e" "checked_test_harness('\$(TKDIR)/xt/skip_all.t', \$(TEST_VERBOSE), '\$(INST_LIB)', '\$(INST_ARCHLIB)')" $tests\n};
+ qq{"-e" "checked_test_harness('\$(TKDIR)/xt', \$(TEST_VERBOSE), '\$(INST_LIB)', '\$(INST_ARCHLIB)')" $tests\n};
 }
 
 package MY;
