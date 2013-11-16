@@ -1,15 +1,29 @@
 language: perl
-perl:
-  - "5.18"
-  - "5.16"
-  - "5.14"
-  - "5.12"
-  - "5.10"
-  - "5.8"
+#perl:
+#  - "5.18"
+#  - "5.16"
+#  - "5.14"
+#  - "5.12"
+#  - "5.10"
+#  - "5.8"
+#env:
+# - DISPLAY=:123
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq xvfb twm libx11-dev libfreetype6-dev libxft-dev
+ - sudo apt-get install -qq xvfb libx11-dev libfreetype6-dev libxft-dev $LIBPNG $LIBZ $LIBJPEG $WINDOW_MANAGER
  - Xvfb :123 &
- - (sleep 10; env DISPLAY=:123 twm) &
-env:
- - DISPLAY=:123
+ - (sleep 10; env DISPLAY=:123 $WINDOW_MANAGER) &
+matrix:
+ include:
+  - perl: "5.18"
+    env: DISPLAY=:123 WINDOW_MANAGER=metacity LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+  - perl: "5.16"
+    env: DISPLAY=:123 WINDOW_MANAGER=fluxbox
+  - perl: "5.14"
+    env: DISPLAY=:123 WINDOW_MANAGER=sawfish LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+  - perl: "5.12"
+    env: DISPLAY=:123 WINDOW_MANAGER=fvwm
+  - perl: "5.10"
+    env: DISPLAY=:123 WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+  - perl: "5.8"
+    env: DISPLAY=:123 WINDOW_MANAGER=twm
