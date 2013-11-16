@@ -1,3 +1,45 @@
+System prerequisites for Perl/Tk on Linux
+
+Of course a C compiler (e.g. gcc) and a make tool (e.g. GNU make)
+needs to be installed. Additionally, some libraries and include files
+are required:
+
+Debian, Ubuntu:
+
+The following system packages should be installed:
+
+    libx11-dev (minimal requirement for basic compilation of Perl/Tk)
+    libfreetype6-dev libxft-dev (for freetype support, XFT=1)
+    libpng-dev libz-dev (for using system library for Tk::PNG)
+    libjpeg-dev (for using system library for Tk::JPEG)
+
+CentOS, RedHat, Fedora:
+
+The following system packages should be installed:
+
+    libX11-devel (minimal requirement for basic compilation of Perl/Tk)
+    libXft-devel (for freetype support, XFT=1)
+    libpng-devel zlib-devel (for using system library for Tk::PNG)
+    libjpeg-devel (for using system library for Tk::JPEG)
+
+With all these requirements, building Perl/Tk is straightforward:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+XFT (freetype support) is enabled by default if the system
+prerequisites are met (see above). To explicitely turn it off, use
+
+    perl Makefile.PL XFT=0
+
+It's recommended to install system's libpng, zlib, and libjpeg first.
+Otherwise the bundled (and usually older) versions of libpng, zlib,
+and libjpeg are used.
+
+----------------------------------------------------------------------
+Older instructions follow
 
 These days perl/Tk is developed on Linux so things should work.
 Nick uses SuSE Distributions, currently using SuSE 9.0.
@@ -55,19 +97,3 @@ Sometimes when run like:
 they will pass :-(
 
 Nick Ing-Simmons 2004/03/18
-
-----------------------------------------------------------------------
-Debian, Ubuntu:
-
-The libx11-dev package is necessary to compile Perl/Tk.
-
-The libfreetype6-dev, libxrender-dev and libxft-dev packages are
-necessary to compile with freetype support (XFT=1).
-
-----------------------------------------------------------------------
-CentOS, RedHat, Fedora:
-
-The libX11-devel package is necessary to compile Perl/Tk.
-
-The libXft-devel package is necessary to compile with freetype support
-(XFT=1).
