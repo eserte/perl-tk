@@ -14,9 +14,13 @@
 # Translated to Perl/Tk by Slaven Rezic
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 no warnings 'qw';
 
 use Tk;
+
+use TkTest qw(set_have_fixed_font with_fixed_font);
 
 BEGIN {
     if (!eval q{
@@ -63,7 +67,6 @@ $t->pack(qw(-expand 1 -fill both));
 $t->update;
 $t->debug("on");
 
-my $skip_fixed_font_test;
 {
     my $font = $t->cget(-font);
     my %fa = ($mw->fontActual($font),
@@ -80,13 +83,15 @@ my $skip_fixed_font_test;
 		    "-linespace"  => 13,
 		    "-fixed"      => 1,
 		   );
+    my $have_fixed_font = 1;
     while(my($key,$val) = each %expected) {
 	if (lc $val ne lc $fa{$key}) {
 	    diag "Value $key does not match: got $fa{$key}, expected $val\n" if $v;
-	    $skip_fixed_font_test = "font-related tests (fixed font not std courier)";
+	    $have_fixed_font = 0;
 	    last;
 	}
     }
+    set_have_fixed_font($have_fixed_font);
 }
 
 # The statements below reset the main window;  it's needed if the window
@@ -1141,8 +1146,7 @@ $t->configure(-state => "normal");
     eval { $mw->SelectionGet };
     like($@, qr{\QPRIMARY selection doesn't exist or form "STRING" not defined});
 }
-SKIP: {
-    skip($skip_fixed_font_test, 1) if $skip_fixed_font_test;
+{
     # This test is non-portable because the window size will vary depending
     # on the font size, which can vary.
     $t2->destroy if Tk::Exists($t2);
@@ -1156,7 +1160,7 @@ SKIP: {
     ## wm the test would fail, so check only the width and height
     ## portions of the geometry.
     # is($t2->geometry, q{150x140+0+0}); # the original test as in Tcl/Tk
-    like($t2->geometry, qr{^150x140\+}, "Toplevel width and height expected for given -width/-height");
+    with_fixed_font { like($t2->geometry, qr{^150x140\+}, "Toplevel width and height expected for given -width/-height") };
 }
 {
     # This test was failing Windows because the title bar on .t2
@@ -1192,20 +1196,20 @@ SKIP: {
     $t2->update;
     is($t2->geometry, q{15x8+0+0});
 }
-SKIP: {
-    skip($skip_fixed_font_test, 4) if $skip_fixed_font_test;
-
+{
     $t2->destroy if Tk::Exists($t2);
     $t2 = $mw->Text(qw(-width 20 -height 10));
-    is($t2->reqheight, 140,
-       q{TextWorldChanged procedure, spacing options}
-      );
+    with_fixed_font {
+	is($t2->reqheight, 140,
+	   q{TextWorldChanged procedure, spacing options}
+	  );
+    };
     $t2->configure(-spacing1 => 2);
-    is($t2->reqheight, 160);
+    with_fixed_font { is($t2->reqheight, 160) };
     $t2->configure(-spacing3 => 1);
-    is($t2->reqheight, 170);
+    with_fixed_font { is($t2->reqheight, 170) };
     $t2->configure(-spacing1 => 0);
-    is($t2->reqheight, 150);
+    with_fixed_font { is($t2->reqheight, 150) };
 }
 
 # (Skipped tests text-15.* because of non-existing "rename" in Perl/Tk
@@ -1250,8 +1254,10 @@ SKIP: {
     $t2->see('end');
     $mw->update;
     $t2->insert('1.0' => "Short\n");
-    is($t2->index('@0,0'), '2.56',
-       q{InsertChars procedure, inserting on top visible line});
+    with_fixed_font {
+	is($t2->index('@0,0'), '2.56',
+	   q{InsertChars procedure, inserting on top visible line});
+    };
 }
 
 {
@@ -1263,7 +1269,7 @@ SKIP: {
     $t2->see('end');
     $mw->update;
     $t2->insert('1.55' => "Short\n");
-    is($t2->index('@0,0'), '2.0');
+    with_fixed_font { is($t2->index('@0,0'), '2.0') };
 }
 
 {
@@ -1275,7 +1281,7 @@ SKIP: {
     $t2->see('end');
     $mw->update;
     $t2->insert('1.56' => "Short\n");
-    is($t2->index('@0,0'), '1.56');
+    with_fixed_font { is($t2->index('@0,0'), '1.56') };
 }
 
 {
@@ -1287,7 +1293,7 @@ SKIP: {
     $t2->see('end');
     $mw->update;
     $t2->insert('1.57' => "Short\n");
-    is($t2->index('@0,0'), '1.56');
+    with_fixed_font { is($t2->index('@0,0'), '1.56') };
 }
 
 $t2->destroy if Tk::Exists($t2);
@@ -1451,8 +1457,10 @@ Line 4
     $t2t->insert('end', "abc def\n01 2345 678 9101112\nLine 3\nLine 4\nLine 5\n6\n7\n8\n");
     $t2t->yview(qw(2.4));
     $t2t->delete(qw(2.5));
-    is($t2t->index('@0,0'), '2.3',
-       q{DeleteChars procedure, updates affecting topIndex});
+    with_fixed_font {
+	is($t2t->index('@0,0'), '2.3',
+	   q{DeleteChars procedure, updates affecting topIndex});
+    };
     $t2t->delete('2.5');
     is($t2t->index('@0,0'), '2.0');
 }
