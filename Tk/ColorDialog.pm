@@ -2,6 +2,9 @@ package Tk::ColorDialog;
 require Tk::Toplevel;
 use base  qw(Tk::Toplevel);
 
+use vars qw($VERSION);
+$VERSION = '4.000';
+
 Construct Tk::Widget 'ColorDialog';
 
 sub Accept

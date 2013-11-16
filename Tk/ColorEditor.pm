@@ -1,7 +1,7 @@
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '4.009'; # was: sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.010';
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
