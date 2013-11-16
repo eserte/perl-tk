@@ -25,6 +25,11 @@ sub begin
 }
 
 my $mw = new MainWindow;
+
+# First setup timers to kill the script in case of timeouts
+$mw->after(5*1000, sub { diag "This test script takes longer than usual... it will maybe be killed in some seconds." });
+$mw->after(30*1000, sub { diag "Killing main window."; $mw->destroy });
+
 my $l = $mw->Label(-text => 'Content')->pack;
 #$l->bind($event,[\&mapped,"update"]);
 $mw->bind($event,[\&mapped,"initial"]);
