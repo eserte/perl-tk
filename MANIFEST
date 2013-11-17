@@ -2027,6 +2027,7 @@ t/TkTest.pm
 t/Tkxs.t
 t/trace1.t
 t/slaves.t
+t/sv.t
 t/unicode.t
 t/widget.t
 t/wm.t
