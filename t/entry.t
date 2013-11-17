@@ -20,7 +20,7 @@ use Tk::Trace;
 use Tk::Config ();
 my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
-use TkTest qw(wm_info set_have_fixed_font with_fixed_font);
+use TkTest qw(wm_info set_have_fixed_font with_fixed_font retry_update);
 
 BEGIN {
     if (!eval q{
@@ -58,15 +58,6 @@ my $wm_name = $wm_info{name};
 
 my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
 my $fluxbox_problems  = defined $wm_name && $wm_name eq 'Fluxbox';
-my $metacity_problems = defined $wm_name && $wm_name eq 'Metacity';
-my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
-
-# It seems that scripts using -xscrollcommand have the same problem
-# with wish8.4 (Tcl/Tk 8.4.19)
-sub TODO_xscrollcommand_problem () {
-    $TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
-    $TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
-}
 
 # Some WMs are slow when resizing the main window. This may cause test
 # failures, because the test suite does not wait for completion of the
@@ -478,7 +469,7 @@ $e->delete(0, "end");
 $e->insert("end", "01234567890");
 $e->selectionFrom(1);
 $e->selection(qw(to 5));
-$e->update;
+#$e->update;
 $e->selectionAdjust(4);
 is($mw->SelectionGet, "123", "Expected result with selectionGet");
 
@@ -486,7 +477,7 @@ $e->delete(0, "end");
 $e->insert("end", "01234567890");
 $e->selectionFrom(1);
 $e->selection(qw(to 5));
-$e->update;
+#$e->update;
 $e->selectionAdjust(2);
 is($mw->SelectionGet, "234");
 
@@ -682,15 +673,9 @@ is($e->index("sel.last"), 5);
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-width 4 -xscrollcommand), \&scroll)->pack;
 $e->insert(qw(end 01234567890));
-$e->update;
+retry_update $e;
 $e->configure(qw(-width 5));
-if (!do {
-    local $TODO;
-    TODO_xscrollcommand_problem;
-    is_deeply([map { substr($_, 0, 8) } @scrollInfo], [0,0.363636]);
-}) {
-    diag "Scrollinfo not as expected (after insert): <@scrollInfo>"
-}
+is_deeply([map { substr($_, 0, 8) } @scrollInfo], [0,0.363636]);
 
 eval { $e->destroy };
 
@@ -829,16 +814,10 @@ $e->focus;
 $e->delete(0, "end");
 $e->insert(0, "abcde");
 $e->insert(2, "XXX");
-$e->update;
+retry_update $e;
 is($e->get, "abXXXcde");
 is($contents, "abXXXcde");
-if (!do {
-    local $TODO;
-    TODO_xscrollcommand_problem;
-    is(join(" ", @scrollInfo), "0 1", "Result collected in -xscrollcommand callback");
-}) {
-    diag "Scrollinfo not as expected (after delete/insert): <@scrollInfo>";
-}
+is(join(" ", @scrollInfo), "0 1", "Result collected in -xscrollcommand callback");
 
 $e->delete(0, "end");
 $e->insert(0, "abcde");
@@ -956,7 +935,7 @@ $e->insert(qw(0 0123456789abcde));
 $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 3));
-$e->update;
+#$e->update;
 is($e->index("sel.first"), 1);
 is($e->index("sel.last"), 6);
 $e->selectionTo(5);
@@ -968,7 +947,7 @@ $e->insert(qw(0 0123456789abcde));
 $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 4));
-$e->update;
+#$e->update;
 is($e->index("sel.first"), 1);
 is($e->index("sel.last"), 5);
 $e->selectionTo(4);
@@ -980,7 +959,7 @@ $e->insert(qw(0 0123456789abcde));
 $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 7));
-$e->update;
+#$e->update;
 is($e->index("sel.first"), 1);
 is($e->index("sel.last"), 2);
 $e->selectionTo(5);
@@ -1000,7 +979,7 @@ $e->insert(qw(0 0123456789abcde));
 $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(3 7));
-$e->update;
+#$e->update;
 is($e->index("sel.first"), 3);
 is($e->index("sel.last"), 4);
 $e->selectionTo(8);
@@ -1020,7 +999,7 @@ $e->insert(qw(0 0123456789abcde));
 $e->selection(qw(from 8));
 $e->selection(qw(to 3));
 $e->delete(qw(5 8));
-$e->update;
+#$e->update;
 is($e->index("sel.first"), 3);
 is($e->index("sel.last"), 5);
 $e->selectionTo(8);
@@ -1032,7 +1011,7 @@ $e->insert(qw(0 0123456789abcde));
 $e->selection(qw(from 8));
 $e->selection(qw(to 3));
 $e->delete(qw(8 10));
-$e->update;
+#$e->update;
 is($e->index("sel.first"), 3);
 is($e->index("sel.last"), 8);
 $e->selectionTo(4);
@@ -1386,15 +1365,9 @@ Tk::catch {$e->destroy};
     eval {
 	local *Tk::Error = sub { $err = $_[1] };
 	$e = $mw->Entry(qw(-width 5 -xscrollcommand thisisnotacommand))->pack;
-	$e->update;
+	retry_update $e;
     };
-    if (!do {
-	local $TODO;
-	TODO_xscrollcommand_problem;
-	like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");;
-    }) {
-	diag "Undefined subroutine thisisnotacommand not detected";
-    }
+    like($err, qr/Undefined subroutine &.*::thisisnotacommand/, "Expected invalid -xscrollcommand callback");;
     $e->destroy;
 }
 
@@ -1407,17 +1380,13 @@ Tk::catch {$e->destroy};
     eval {
 	local *Tk::Error = sub { $err = $_[1] };
 	$e = $mw->Entry(qw(-width 5))->pack;
-	$e->update;
+	retry_update $e;
 	$e->configure(qw(-xscrollcommand thisisnotacommand));
 	$e->insert("end", "more than 5 chars");
 	$e->xviewMoveto(1); # should really scroll
 	$e->update;
     };
-    {
-	local $TODO;
-	TODO_xscrollcommand_problem;
-	like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
-    }
+    like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
     $e->destroy;
 }
 
