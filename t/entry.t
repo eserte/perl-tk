@@ -20,7 +20,7 @@ use Tk::Trace;
 use Tk::Config ();
 my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
-use TkTest qw(wm_info set_have_fixed_font with_fixed_font retry_update);
+use TkTest qw(set_have_fixed_font with_fixed_font retry_update create_placeholder_widget);
 
 BEGIN {
     if (!eval q{
@@ -53,25 +53,7 @@ my $skip_wm_font_test = "window manager and/or font-related tests";
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
 
-my %wm_info = wm_info($mw);
-my $wm_name = $wm_info{name};
-
-my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
-my $fluxbox_problems  = defined $wm_name && $wm_name eq 'Fluxbox';
-
-# Some WMs are slow when resizing the main window. This may cause test
-# failures, because the test suite does not wait for completion of the
-# WM (and probably cannot do it anyway). To avoid resizing the main
-# window, a placeholder widget is created. This widget has to be
-# re-created every time the main window is re-created, or if all
-# children are destroyed.
-sub create_placeholder_widget () {
-    if ($kwin_problems || $fluxbox_problems) {
-	$mw->Frame(-width => 640, -height => 1)->pack;
-    }
-}
-
-create_placeholder_widget;
+create_placeholder_widget $mw;
 
 my $e0 = $mw->Entry;
 ok(Tk::Exists($e0), "Entry widget exists");
@@ -1160,7 +1142,7 @@ my $e1 = $mw->Entry(-fg => '#112233');
 is(($mw->children)[0], $e1);
 $e1->destroy;
 is(scalar($mw->children), undef); # XXX why not 0?
-create_placeholder_widget;
+create_placeholder_widget $mw;
 
 $e = $mw->Entry(-font => $fixed, qw(-width 5 -bd 2 -relief sunken))->pack;
 $e->insert(qw(0 012345678901234567890));

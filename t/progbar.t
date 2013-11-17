@@ -1,13 +1,19 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 use Test::More;
 use Tk;
 use Tk::widgets qw(ProgressBar);
+
+use TkTest qw(create_placeholder_widget);
 
 plan tests => 27;
 
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
+
+create_placeholder_widget $mw;
 
 my $var = 0;
 

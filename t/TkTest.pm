@@ -10,7 +10,7 @@ $VERSION = '4.010';
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair checked_test_harness);
-@EXPORT_OK = qw(catch_grabs wm_info set_have_fixed_font with_fixed_font retry_update);
+@EXPORT_OK = qw(catch_grabs wm_info set_have_fixed_font with_fixed_font retry_update create_placeholder_widget);
 
 sub _is_in_path ($);
 
@@ -244,6 +244,20 @@ sub retry_update ($) {
     }
 }
 
+# Some WMs are slow when resizing the main window. This may cause test
+# failures, because the test suite does not wait for completion of the
+# WM (and probably cannot do it anyway). To avoid resizing the main
+# window, a placeholder widget is created. This widget has to be
+# re-created every time the main window is re-created, or if all
+# children are destroyed.
+sub create_placeholder_widget ($) {
+    my $mw = shift;
+    my %wm_info = wm_info $mw;
+    my $wm_name = $wm_info{name};
+    if (defined $wm_name && $wm_name =~ m{^( KWin | Fluxbox )$}x) {
+	$mw->Frame(-width => 640, -height => 1)->pack;
+    }
+}
 
 # REPO BEGIN
 # REPO NAME is_in_path /home/e/eserte/work/srezic-repository 
