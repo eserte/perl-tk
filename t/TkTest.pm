@@ -219,6 +219,7 @@ sub wm_info ($) {
     SKIP:
 	{
 	    Test::More::skip("fixed courier font not available", 1) if !$have_fixed_font;
+	    local $Test::Builder::Level = $Test::Builder::Level + 1;
 	    $testcode->();
 	}
     }
