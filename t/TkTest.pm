@@ -10,7 +10,7 @@ $VERSION = '4.010';
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair checked_test_harness);
-@EXPORT_OK = qw(catch_grabs wm_info set_have_fixed_font with_fixed_font);
+@EXPORT_OK = qw(catch_grabs wm_info set_have_fixed_font with_fixed_font retry_update);
 
 sub _is_in_path ($);
 
@@ -224,6 +224,26 @@ sub wm_info ($) {
 	}
     }
 }
+
+sub retry_update ($) {
+    my($w) = @_;
+
+    if ($Tk::platform eq 'unix') {
+	my $exposed;
+	$w->bind('<Expose>' => sub { $exposed = 1 });
+	for my $i (1..5) {
+	    $w->update;
+	    last if ($exposed);
+	    my $wait = $i + rand(0.1);
+	    Test::More::diag(sprintf("<Expose> event did not arrive, wait for %0.2fs...", $wait));
+	    $w->after($wait*1000);
+	}
+	$w->bind('<Expose>' => undef);
+    } else {
+	$w->update;
+    }
+}
+
 
 # REPO BEGIN
 # REPO NAME is_in_path /home/e/eserte/work/srezic-repository 
