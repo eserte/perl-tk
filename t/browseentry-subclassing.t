@@ -2,7 +2,6 @@
 # -*- perl -*-
 
 #
-# $Id: browseentry-subclassing.t,v 1.4 2003/04/21 19:49:27 eserte Exp $
 # Author: Slaven Rezic
 #
 
@@ -13,15 +12,15 @@ use Tk::BrowseEntry;
 
 BEGIN {
     if (!eval q{
-	use Test;
+	use Test::More;
 	1;
     }) {
-	print "1..0 # skip: no Test module\n";
+	print "1..0 # skip: no Test::More module\n";
 	exit;
     }
 }
 
-BEGIN { plan tests => 2 }
+BEGIN { plan tests => 3 }
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
@@ -39,7 +38,7 @@ my $ne = $mw->SpinboxBrowseEntry(-from => -10,
 			     -to => +10,
 			     -choices => [-6,-3,0,3,6],
 			    )->pack;
-ok($ne->isa('Tk::SpinboxBrowseEntry'));
+isa_ok $ne, 'Tk::SpinboxBrowseEntry';
 
 
 {
@@ -69,7 +68,8 @@ ok($ne->isa('Tk::SpinboxBrowseEntry'));
 
 $mw->optionAdd("*MyLabEntryBrowseEntry*Entry.background", "red");
 my $le = $mw->MyLabEntryBrowseEntry(-label => "My LabEntry:")->pack;
-ok($le->isa('Tk::MyLabEntryBrowseEntry'));
+isa_ok $le, 'Tk::MyLabEntryBrowseEntry';
+is $le->Subwidget('entry')->Subwidget('entry')->cget('-background'), 'red', 'option db value for subclass';
 
 $top->Button(-text => "Ok",
 	     -command => sub {
