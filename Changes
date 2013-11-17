@@ -1,3 +1,48 @@
+Tk-804.031_500 release (2013-11-17)
+----------------------
+
+Fixes
+ RT# 88210: fix compilation for perl 5.19.0+ ("undef bool").
+
+ RT# 90077: floating number issue with -textvariable variables.
+
+ RT# 89621: avoid segfaults during global destruction (by Gisle Aas).
+
+ RT# 87016: compatibility for libpng 1.6.x.
+
+ RT# 86988: use cflags/libs information from pkg-config zlib.
+
+ RT# 89261: split Tk/ColorEditor.pm into three .pm files.
+
+ RT# 71718: fix compilation issue with 64bit Strawberry Perl (Tk_Cursor).
+
+ Fail gracefully if no font could be allocated.
+
+ ptksh: storing the history works now also under Windows.
+
+ Better handling if libpng's configure fails.
+
+Documentation
+ Changes to README.linux (dependency requirements, fontconfig) and
+ README.cygwin.
+
+ Document special Tk::Table behavior regarding -takefocus => 0.
+
+Tests
+ New test files (eventGenerate.t, sv.t) and new test cases
+ (eventGenerate in optmenu.t).
+
+ More test tweaks (e.g. skip some tests if the required fixed font is
+ unavailable, see with_fixed_font in TkTest.pm, workaround some fvwm2
+ problems in wm-tcl.t, protect from haning wm-time.t).
+
+ checked_test_harness() skips testing if no font could be allocated.
+
+ No test request user positioning windows anymore (for old window
+ managers like twm).
+
+ Configuration file for travis-ci.
+
 Tk-804.031 release (2013-05-25)
 ----------
 
