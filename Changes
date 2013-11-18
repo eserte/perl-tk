@@ -136,7 +136,7 @@ Fixes
  RT #70429: show correct file name if image loading failed. Also
  systematically searched and fixed other bad uses of Tcl_AppendResult.
 
- RT #70423: provide inuse method for Tk::Image
+ RT #70243: provide inuse method for Tk::Image
 
  Fixed a possible segfault when using canvas' select clear method.
 
