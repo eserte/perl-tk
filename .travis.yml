@@ -20,11 +20,8 @@ matrix:
 #    env: DISPLAY=:123 WINDOW_MANAGER=metacity LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.18"
     env: DISPLAY=:123 WINDOW_MANAGER=xfwm4 LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-## known failures here (t/listbox.t)
-#  - perl: "5.16"
-#    env: DISPLAY=:123 WINDOW_MANAGER=fluxbox
   - perl: "5.16"
-    env: DISPLAY=:123 WINDOW_MANAGER=fvwm
+    env: DISPLAY=:123 WINDOW_MANAGER=fluxbox
   - perl: "5.14"
     env: DISPLAY=:123 WINDOW_MANAGER=sawfish LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.12"
