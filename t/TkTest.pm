@@ -39,10 +39,12 @@ sub checked_test_harness ($@) {
     if (defined $Tk::platform && $Tk::platform eq 'unix') { # undef for cygwin+MSWin32, because Tk not yet loaded
 	my $skip_all_test;
 	my $mw = eval { MainWindow->new() };
+	print "# $@\n" if $@;
 	if (!Tk::Exists($mw)) {
 	    $skip_all_test = "skip_all_mw.t";
 	} else {
 	    my $l = eval { $mw->Label(-text => "test") }; # will allocate a font, which may fail
+	    print "# $@\n" if $@;
 	    if (!Tk::Exists($l)) {
 		$skip_all_test = "skip_all_font.t";
 	    }
