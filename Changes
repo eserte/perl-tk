@@ -1,3 +1,14 @@
+Tk-804.031_501 release (2013-11-18)
+----------------------
+
+Fixes
+ Fix gamma setting for PNG images (was only broken in 804.031_500).
+
+ Fix clang compilation error (was only broken in 804.031_500).
+
+Tests
+ Some tests are now more robust.
+
 Tk-804.031_500 release (2013-11-17)
 ----------------------
 
