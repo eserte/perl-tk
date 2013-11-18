@@ -71,17 +71,30 @@ ok(Tk::Exists($mw));
 my %wm_info = wm_info($mw);
 my $wm_name = $wm_info{name};
 
-my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
+#my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
 my $fluxbox_problems  = defined $wm_name && $wm_name eq 'Fluxbox';
-my $metacity_problems = defined $wm_name && $wm_name eq 'Metacity';
-my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
+#my $metacity_problems = defined $wm_name && $wm_name eq 'Metacity';
+#my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
 
 # This is probably the same problem as in t/entry.t
-sub TODO_xscrollcommand_problem () {
-    $TODO = "May fail under some conditions (another grab?) on KDE"      if !$TODO && $kwin_problems;
-    $TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
-    $TODO = "May fail under some conditions (another grab?) on Fluxbox"  if !$TODO && $fluxbox_problems;
-    $TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
+sub TODO_xscrollcommand_problem (&) {
+    my $code = shift;
+    local $TODO;
+    #$TODO = "May fail under some conditions (another grab?) on KDE"      if !$TODO && $kwin_problems;
+    #$TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
+    #$TODO = "May fail under some conditions (another grab?) on Fluxbox"  if !$TODO && $fluxbox_problems;
+    #$TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
+    $TODO = "May fail under some conditions" if $Tk::platform eq 'unix'; # may happen even on fvwm on heavy load
+    local $Test::Builder::Level = $Test::Builder::Level + 2;
+    $code->();
+}
+
+sub TODO_fluxbox_problem (&) {
+    my $code = shift;
+    local $TODO;
+    $TODO = "May fail under some conditions on Fluxbox"  if !$TODO && $fluxbox_problems;
+    local $Test::Builder::Level = $Test::Builder::Level + 2;
+    $code->();
 }
 
 # Create entries in the option database to be sure that geometry options
@@ -739,7 +752,9 @@ is($lb->index('@0,0'), 13);
 
 mkPartial();
 $partial_lb->see(4);
-is($partial_lb->index('@0,0'), 1);
+TODO_fluxbox_problem {
+    is($partial_lb->index('@0,0'), 1);
+};
 
 eval { $lb->selection };
 like($@ ,qr/wrong \# args: should be \"\.listbox.* selection option index \?index\?\"/,
@@ -1881,8 +1896,10 @@ $lb->update;
 $lb->delete(qw/0 end/);
 $lb->update;
 is($log[0], "y 0 1");
-is_float($log[1], "y 0 0.625");
-is($log[2], "y 0 1");
+TODO_fluxbox_problem {
+    is_float($log[1], "y 0 0.625");
+    is($log[2], "y 0 1");
+};
 
 mkPartial();
 $partial_lb->configure(-yscrollcommand => ["record", "y"]);
@@ -2110,13 +2127,9 @@ $lb->insert("end", "0000000000");
 $mw->update;
 $lb->insert("end", "00000000000000000000");
 $mw->update;
-if (!do {
-    local $TODO;
-    TODO_xscrollcommand_problem;
+TODO_xscrollcommand_problem {
     is_deeply(\@log, ["x 0 1", "x 0 1", "x 0 0.5"]);
-}) {
-    diag "Scrollinfo not as expected (after double insert): <" . join(";", @log) . ">";
-}
+};
 
 SKIP: {
     skip("no itemconfigure in Tk800.x", 35)
