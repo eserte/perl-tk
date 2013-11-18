@@ -1408,7 +1408,7 @@ TclObj_free(pTHX_ SV *sv, MAGIC *mg)
     * some the stuff hanging off the Tcl_InternalRep, but there
     * are not really much more we can do here.
     */
-   return;
+   return 0;
   }
  info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
  if (info->type)
