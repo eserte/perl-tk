@@ -30,7 +30,7 @@ eval { $top->geometry('+10+10'); }; # This works for mwm and interactivePlacemen
 
 my $f;
 
-my $delay = 500;
+my $delay = 250;
 
 GetOptions("delay=i" => \$delay)
     or die "usage: $0 [-delay ...ms]";
@@ -58,7 +58,7 @@ eval {
 is($@, "", "creating Tk::FBox widget");
 
 catch_grabs {
-    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    destroy_if_visible($f) if $ENV{BATCH};
     my $result = $f->Show;
     if (!$ENV{BATCH}) {
 	diag "Result is <$result>";
@@ -81,7 +81,7 @@ eval {
 is($@, "", "creating Tk::FBox widget");
 
 catch_grabs {
-    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    destroy_if_visible($f) if $ENV{BATCH};
     my $result = $f->Show;
     if (!$ENV{BATCH}) {
 	diag "Result is <$result>";
@@ -112,7 +112,7 @@ eval {
 is($@, "", "creating Tk::FBox widget for save");
 
 catch_grabs {
-    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    destroy_if_visible($f) if $ENV{BATCH};
     my $result = $f->Show;
     if (!$ENV{BATCH}) {
 	diag "Result is <$result>";
@@ -132,7 +132,7 @@ eval {
 is($@, "", "creating Tk::FBox widget for choosing directories");
 
 catch_grabs {
-    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    destroy_if_visible($f) if $ENV{BATCH};
     my $result = $f->Show;
     if (!$ENV{BATCH}) {
 	diag "Result is <$result>";
@@ -193,6 +193,42 @@ TODO: {
 	}
 	pass("called getOpenFile with -multiple");
     };
+}
+
+# Tk::FBox is internally using waitVisibility. The test may however
+# try to destroy the window before the visibility ever changed,
+# leading to errors like
+#
+#     window ".fbox" was deleted before its visibility changed
+#
+# To prevent this, the <Visibility> events are trapped. If there
+# was no such event when the window is about to be destroyed,
+# then the script waits another second, up to a maximum of
+# 10 seconds.
+sub destroy_if_visible {
+    my $w = shift;
+    my $visibility_changed = 0;
+    $w->bind('<Visibility>' => sub { $visibility_changed = 1 });
+    my $trials = 0;
+    my $destroy_if_visibility_changed;
+    $destroy_if_visibility_changed =
+	sub {
+	    if ($visibility_changed) {
+		$w->destroy;
+	    } else {
+		$trials++;
+		if ($trials > 10) {
+		    diag "Window never got visible, destroying nevertheless...";
+		    $w->destroy;
+		} else {
+		    if ($trials == 1) {
+			diag "Slow delivery of <Visibility> event, waiting...";
+		    }
+		    $w->after(1000, $destroy_if_visibility_changed);
+		}
+	    }
+	};
+    $w->after($delay, $destroy_if_visibility_changed);
 }
 
 1;
