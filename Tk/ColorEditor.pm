@@ -1,7 +1,7 @@
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '4.010';
+$VERSION = '4.014';
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

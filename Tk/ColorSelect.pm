@@ -2,7 +2,7 @@ package Tk::ColorSelect; # XXX why is this the Tk::ColorSelect package?
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.013';
+$VERSION = '4.014';
 
 use Tk qw(Ev);
 

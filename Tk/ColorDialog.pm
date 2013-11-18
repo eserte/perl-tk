@@ -3,7 +3,7 @@ require Tk::Toplevel;
 use base  qw(Tk::Toplevel);
 
 use vars qw($VERSION);
-$VERSION = '4.000';
+$VERSION = '4.014';
 
 Construct Tk::Widget 'ColorDialog';
 
