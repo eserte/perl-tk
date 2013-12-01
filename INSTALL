@@ -16,6 +16,13 @@ After installation, a demonstration program may be started using:
 
     widget
 
+Compiled third-party Perl/Tk modules have to be recompiled after
+installing a new Perl/Tk version. Some known such modules are:
+* Tk::TableMatrix
+* Tk::Zinc
+* Tk::TIFF
+* Tk::Canvas::Point
+
 ---------------------------------------------------------
 Older and probabably outdated notes follow:
 
