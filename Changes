@@ -1,3 +1,13 @@
+Tk-804.031_502 release (2013-12-01)
+----------------------
+
+Fixes
+ Enable libpng configure for all Solaris architectures.
+
+Documentation
+ Update INSTALL, README-ActiveState.txt, and README-Strawberry.txt
+ documents.
+
 Tk-804.031_501 release (2013-11-18)
 ----------------------
 
