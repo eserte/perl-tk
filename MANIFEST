@@ -6,7 +6,7 @@ bin/perms
 bin/tkman
 bin/unres
 bin/uselib
-build				Perl Script to rebuild "perl build"
+build_ptk			Perl Script to rebuild "perl build"
 Canvas/Canvas.pm
 Canvas/Canvas.xs
 Canvas/canvtxt
