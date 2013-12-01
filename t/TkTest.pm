@@ -6,7 +6,7 @@ package TkTest;
 
 use strict;
 use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
-$VERSION = '4.011';
+$VERSION = '4.012';
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair checked_test_harness);
@@ -230,20 +230,16 @@ sub wm_info ($) {
 sub retry_update ($) {
     my($w) = @_;
 
-    if ($Tk::platform eq 'unix') {
-	my $exposed;
-	$w->bind('<Expose>' => sub { $exposed = 1 });
-	for my $i (1..5) {
-	    $w->update;
-	    last if ($exposed);
-	    my $wait = $i + rand(0.1);
-	    Test::More::diag(sprintf("<Expose> event did not arrive, wait for %0.2fs...", $wait));
-	    $w->after($wait*1000);
-	}
-	$w->bind('<Expose>' => undef);
-    } else {
+    my $exposed;
+    $w->bind('<Expose>' => sub { $exposed = 1 });
+    for my $i (1..5) {
 	$w->update;
+	last if ($exposed);
+	my $wait = $i + rand(0.1);
+	Test::More::diag(sprintf("<Expose> event did not arrive, wait for %0.2fs...", $wait));
+	$w->after($wait*1000);
     }
+    $w->bind('<Expose>' => undef);
 }
 
 # Some WMs are slow when resizing the main window. This may cause test
