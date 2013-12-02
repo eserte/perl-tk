@@ -234,6 +234,10 @@ if ($] > 5.013002) # SvNV_nomg available
  {
   $define{'HAS_SVNV_NOMG'} = 1;
  }
+if ($] >= 5.009001 || ($] >= 5.008009 && $] < 5.009)) # SvIV_nomg available
+ {
+  $define{'HAS_SVIV_NOMG'} = 1;
+ }
 
 if (!$IsWin32)
  {

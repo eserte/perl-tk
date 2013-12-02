@@ -1526,7 +1526,11 @@ Tcl_ObjMagic(Tcl_Obj *obj,int add)
    iv->type = type;
    if (iv->type == &tclIntType)
     {
+#ifdef HAS_SVIV_NOMG
      iv->internalRep.longValue = SvIV_nomg(obj);
+#else
+     iv->internalRep.longValue = SvIV(obj);
+#endif
     }
    else if (iv->type == &tclDoubleType)
     {
