@@ -10,7 +10,7 @@ Tk::composite - Defining a new composite widget class
 
     package Tk::MyNewWidget;
 
-    use Tk:widgets qw/ list of Tk widgets /;
+    use Tk::widgets qw/ list of Tk widgets /;
     use base qw/ Tk::Frame /;    # or Tk::Toplevel
 
     Construct Tk::Widget 'MyNewWidget';
