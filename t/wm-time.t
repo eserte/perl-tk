@@ -3,13 +3,28 @@
 
 
 use strict;
+use FindBin;
+use lib "$FindBin::RealBin";
+
 use Tk;
 use Test::More;
+
+use TkTest qw(wm_info);
+
 # Win32 gets one <visibility> event on toplevel and one on content (as expected)
 # UNIX/X is more complex, as windows overlap (deliberately)
 our $tests = 6;
 our $expect = 0;
 plan 'no_plan'; # $tests for fast connections, $tests-1 for slow connections
+
+my $mw = new MainWindow;
+
+my %wm_info = wm_info($mw);
+my $wm_name = $wm_info{name};
+
+my $initial_ok_delay = 0.4;
+# GNOME Shell is sometimes slow
+my $ok_delay = $wm_name eq 'GNOME Shell' ? 1.0 : 0.5;
 
 my $event = '<Map>';
 my $why;
@@ -23,8 +38,6 @@ sub begin
  $expect = shift;
  diag "Start $why $expect";
 }
-
-my $mw = new MainWindow;
 
 # First setup timers to kill the script in case of timeouts
 $mw->after(5*1000, sub { diag "This test script takes longer than usual... it will maybe be killed in some seconds." });
@@ -63,14 +76,14 @@ sub mapped
  my $now = Tk::timeofday();
  my $delay = $now - $start;
  diag sprintf "%s $why %.3g $expect\n",$w->PathName,$delay;
- if ($state eq 'initial' && $delay > 0.4)
+ if ($state eq 'initial' && $delay > $initial_ok_delay)
   {
    $skip_slow_connection = 1;
    return;
   }
  if ($expect-- > 0)
   {
-   cmp_ok($delay, "<", 0.5, $why);
+   cmp_ok($delay, "<", $ok_delay, $why);
   }
 }
 
