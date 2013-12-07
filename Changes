@@ -1,3 +1,13 @@
+Tk-804.031_503 release (2013-12-07)
+----------------------
+
+Fixes
+ Regain compatibility for perl < 5.8.9
+ (SvIV_nomg is not available with earlier perls).
+
+Tests
+ wm-time.t more robust against GNOME Shell slowness.
+
 Tk-804.031_502 release (2013-12-01)
 ----------------------
 
