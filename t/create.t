@@ -80,7 +80,7 @@ BEGIN
 			    ($^O eq 'cygwin' and defined($Tk::platform)
 					     and $Tk::platform eq 'MSWin32'));
 
-   plan test => (15*@class+3);
+   plan test => (15*@class+4);
 
   };
 
@@ -92,6 +92,9 @@ eval {$mw = Tk::MainWindow->new();};
 ok($@, "", "can't create MainWindow");
 ok(Tk::Exists($mw), 1, "MainWindow creation failed");
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
+
+eval { Tk::MainWindow::Create() };
+ok($@ =~ qr{wrong # args: should be .*Tk::MainWindow::Create pathName}, 1, "no segfault for Tk::MainWindow::Create without args");
 
 my $w;
 foreach my $class (@class)
