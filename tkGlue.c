@@ -2370,7 +2370,7 @@ XS(XS_Tk__MainWindow_Create)
  STRLEN na;
  Tcl_Interp *interp = Tcl_CreateInterp();
  SV **args = &ST(0);
- char *appName = SvPV(ST(1),na);
+ char *appName = items >= 1 ? SvPV(ST(1),na) : "";
  int offset = args - sp;
  int code;
  if (!initialized)
