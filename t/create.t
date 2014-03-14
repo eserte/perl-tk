@@ -1,7 +1,7 @@
 # -*- perl -*-
 BEGIN { $|=1; $^W=1; }
 use strict;
-use Test;
+use Test::More;
 ##
 ## Almost all widget classes:  load module, create, pack, and
 ## destory an instance.
@@ -80,40 +80,46 @@ BEGIN
 			    ($^O eq 'cygwin' and defined($Tk::platform)
 					     and $Tk::platform eq 'MSWin32'));
 
-   plan test => (15*@class+4);
+   plan tests => (15*@class+4);
 
   };
 
+if (!defined &diag)
+ {
+  *diag = sub { print "# $_[0]\n" };
+ }
+
 eval { require Tk; };
-ok($@, "", "loading Tk module");
+is($@, "", "loading Tk module");
 
 my $mw;
 eval {$mw = Tk::MainWindow->new();};
-ok($@, "", "can't create MainWindow");
-ok(Tk::Exists($mw), 1, "MainWindow creation failed");
+is($@, "", "No error while creating MainWindow");
+ok(Tk::Exists($mw), "MainWindow creation OK");
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 eval { Tk::MainWindow::Create() };
-ok($@ =~ qr{wrong # args: should be .*Tk::MainWindow::Create pathName}, 1, "no segfault for Tk::MainWindow::Create without args");
+isnt($@, '', "no segfault for Tk::MainWindow::Create without args, but an error message");
 
 my $w;
 foreach my $class (@class)
   {
-    print "Testing $class\n";
+    note "Testing $class";
     undef($w);
 
     eval "require Tk::$class;";
-    ok($@, "", "Error loading Tk::$class");
-    ok("Tk::$class"->isa('Tk::Widget'),1,"Tk::$class is not a widget");
+    is($@, "", "No error loading Tk::$class");
+    isa_ok("Tk::$class", 'Tk::Widget', "Tk::$class is a widget");
 
     eval { $w = $mw->$class(); };
-    ok($@, "", "can't create $class widget");
-    skip($@, Tk::Exists($w), 1, "$class instance does not exist");
+    is($@, "", "Can create $class widget");
+    ok(Tk::Exists($w), "$class instance exists");
 
+ SKIP: {
+        skip "Window cannot be created", 6
+	  if !Tk::Exists($w);
 
-    if (Tk::Exists($w))
-      {
-        ok($w->class,$class,"Window class does not match");
+        is($w->class,$class,"Window class matches");
 
         if ($w->isa('Tk::Wm'))
           {
@@ -124,30 +130,30 @@ foreach my $class (@class)
 	    #		geometry and positionfrom do not help
 	    eval { $w->positionfrom('user'); };
             #eval { $w->geometry('+10+10'); };
-	    ok ($@, "", 'Problem set postitionform to user');
+	    is ($@, "", 'No problem set postitionform to user');
 
             eval { $w->Popup; };
-	    ok ($@, "", "Can't Popup a $class widget")
+	    is ($@, "", "Can Popup a $class widget")
           }
         else
           {
-	    ok(1); # dummy for above positionfrom test
+	    pass("dummy for positionfrom test for non-Wm widgets");
             eval { $w->pack; };
-	    ok ($@, "", "Can't pack a $class widget")
+	    is ($@, "", "Can pack a $class widget")
           }
-        print "# $class update\n";
+        note "$class update";
         eval { $mw->update; };
-        ok ($@, "", "Error during 'update' for $class widget");
+        is ($@, "", "No error during 'update' for $class widget");
 
         my @dummy;
-        print "# $class configure list\n";
+        note "$class configure list";
         eval { @dummy = $w->configure; };
-        ok ($@, "", "Error: configure list for $class");
+        is ($@, "", "No error while getting configure as list for $class");
         my $dummy;
-        print "# $class configure scalar\n";
+        note "$class configure scalar";
         eval { $dummy = $w->configure; };
-        ok ($@, "", "Error: configure scalar for $class");
-        ok (scalar(@dummy),scalar(@$dummy), "Error: scalar config != list config");
+        is ($@, "", "No error while getting configure as scalar for $class");
+        is (scalar(@dummy),scalar(@$dummy), "Error: scalar config != list config");
 
         $@ = "";
         my %skip = (-class => 1);
@@ -163,21 +169,21 @@ foreach my $class (@class)
             eval { $w->configure($val[0],$val[-1]) };
             if ($@)
              {
-              print "#$class @val:$@";
+              diag "$class @val:$@";
               last;
              }
            }
          }
-        ok($@,"","Cannot re-configure $class");
+        is($@,"","Re-configure $class");
 
-        print "# $class update post-configure\n";
+        note "$class update post-configure";
         eval { $mw->update; };
-        ok ($@, "", "Error: 'update' after configure for $class widget");
+        is ($@, "", "'update' after configure for $class widget");
 
-        print "# $class destroy\n";
+        note "$class destroy";
         eval { $w->destroy; };
-        ok($@, "", "can't destroy $class widget");
-        ok(!Tk::Exists($w), 1, "$class: widget not really destroyed");
+        is($@, "", "can destroy $class widget");
+        ok(!Tk::Exists($w), "$class: widget is really destroyed");
 
         # XXX: destroy-destroy test disabled because nobody vote for this feature
 	# Nick Ing-Simmmons wrote:
@@ -193,12 +199,6 @@ foreach my $class (@class)
         #eval { $w->destroy; };
         #ok($@, "", "Ooops, destroying a destroyed widget should not complain");
 
-      }
-    else
-      {
-        # Widget $class couldn't be created:
-	#	Popup/pack, update, destroy skipped
-	for (1..6) { skip (1,1,1, "skipped because widget could not be created"); }
       }
   }
 
