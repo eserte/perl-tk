@@ -27,21 +27,13 @@ use_ok 'Tk::ErrorDialog';
 my $mw = tkinit;
 $mw->geometry("+10+10");
 
-my $errmsg = "Intentional error.";
-$mw->afterIdle(sub { die "$errmsg\n" });
-
 my $ed;
-$mw->after(100, sub {
-	       my $dialog = search_error_dialog($mw);
-	       isa_ok($dialog, "Tk::Dialog", "dialog");
-	       $ed = $dialog;
-	       my $error_stacktrace_toplevel = search_error_stacktrace_toplevel($mw);
-	       isa_ok($error_stacktrace_toplevel, 'Tk::ErrorDialog', 'Found stacktrace window');
-	       is($error_stacktrace_toplevel->state, 'withdrawn', 'Stacktrace not visible');
-	       $error_stacktrace_toplevel->geometry('+0+0'); # for WMs with interactive placement
-	       $dialog->SelectButton('Stack trace');
-	       second_error();
-	   });
+
+my $errmsg = "Intentional error.";
+$mw->afterIdle(sub {
+		   $mw->after(100, \&first_error);
+		   die "$errmsg\n";
+	       });
 
 $mw->after(20*1000, sub {
 	       if (Tk::Exists($mw)) {
@@ -50,6 +42,19 @@ $mw->after(20*1000, sub {
 	       }
 	   });
 MainLoop;
+
+# fills $ed
+sub first_error {
+    my $dialog = search_error_dialog($mw);
+    isa_ok($dialog, "Tk::Dialog", "dialog");
+    $ed = $dialog;
+    my $error_stacktrace_toplevel = search_error_stacktrace_toplevel($mw);
+    isa_ok($error_stacktrace_toplevel, 'Tk::ErrorDialog', 'Found stacktrace window');
+    is($error_stacktrace_toplevel->state, 'withdrawn', 'Stacktrace not visible');
+    $error_stacktrace_toplevel->geometry('+0+0'); # for WMs with interactive placement
+    $dialog->SelectButton('Stack trace');
+    second_error();
+}
 
 sub second_error {
     $mw->afterIdle(sub { die "$errmsg\n" });
