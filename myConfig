@@ -147,12 +147,12 @@ sub Ift
 {
  foreach (map { "$_/freetype2" } @_)
   {
-   if (-r "$_/freetype.h") # location in Debian (since jessie)
+   if (-r "$_/freetype.h") # location in Debian (since jessie) and in newer versions of the FreeBSD port
     {
      print "Using -I$_ to find $_/freetype/freetype.h\n";
      return "-I$_";
     }
-   if (-r "$_/freetype/freetype.h") # location in FreeBSD (up to version 10.0) and Debian (up to wheezy)
+   if (-r "$_/freetype/freetype.h") # location in FreeBSD (older versions of freetype2 port) and Debian (up to wheezy)
     {
      print "Using -I$_ to find $_/freetype/freetype.h\n";
      return "-I$_";
