@@ -10,11 +10,13 @@ language: perl
 # - DISPLAY=:123
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq xvfb libx11-dev libfreetype6-dev libxft-dev $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kde-window-manager" || echo -n $WINDOW_MANAGER)
+ - sudo apt-get install -qq xvfb libx11-dev $([ "$USE_XFT" = "no" ] || echo -n "libfreetype6-dev libxft-dev") $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kde-window-manager" || echo -n $WINDOW_MANAGER)
  - Xvfb :123 &
  - (sleep 10; env DISPLAY=:123 $WINDOW_MANAGER) &
 matrix:
  include:
+  - perl: "5.19"
+    env: DISPLAY=:123 WINDOW_MANAGER=twm
 ## t/fbox.t fails, not reproducible on a freebsd system
 #  - perl: "5.18"
 #    env: DISPLAY=:123 WINDOW_MANAGER=metacity LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
@@ -29,4 +31,4 @@ matrix:
   - perl: "5.10"
     env: DISPLAY=:123 WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.8"
-    env: DISPLAY=:123 WINDOW_MANAGER=twm
+    env: DISPLAY=:123 WINDOW_MANAGER=twm USE_XFT=no
