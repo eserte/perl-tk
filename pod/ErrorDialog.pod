@@ -1,0 +1,36 @@
+#  Copyright (c) 1990-1994 The Regents of the University of California.
+#  Copyright (c) 1994-1996 Sun Microsystems, Inc.
+#  See the file "license.terms" for information on usage and redistribution
+#  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
+#
+
+=head1 NAME
+
+Tk::ErrorDialog - Method invoked to process background errors
+
+=for category Binding Events and Callbacks
+
+=head1 SYNOPSIS
+
+Customization:
+
+    require Tk::ErrorDialog;
+
+=head1 DESCRIPTION
+
+C<Tk::ErrorDialog> is a possibility to handle background errors. For a full descriptionm, see L<Tk::Error>.
+
+=head1 SEE ALSO
+
+L<Tk::Error>
+L<Tk::bind|Tk::bind>
+L<Tk::after|Tk::after>
+L<Tk::fileevent|Tk::fileevent>
+
+=head1 KEYWORDS
+
+background error, reporting, error dialog
+
+=cut
+
