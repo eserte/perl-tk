@@ -15,7 +15,7 @@ before_install:
  - (sleep 10; env DISPLAY=:123 $WINDOW_MANAGER) &
 matrix:
  include:
-  - perl: "5.19"
+  - perl: "5.20"
     env: DISPLAY=:123 WINDOW_MANAGER=twm
 ## t/fbox.t fails, not reproducible on a freebsd system
 #  - perl: "5.18"
