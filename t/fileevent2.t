@@ -21,7 +21,7 @@ BEGIN {
     }
 }
 
-plan tests => 1;
+plan tests => 2;
 
 my @fh;
 my $callback_called = 0;
@@ -35,8 +35,10 @@ $mw->idletasks;
 #
 # tclUnixNotify.c used to do bit-handling for the select() mask
 # itself, but this was broken for 64bit machines.
+my ($rpipe, $wpipe);
+ok(pipe($rpipe, $wpipe), 'create blocking descriptors');
 for (1..100) {
-    open my $dup, "<&", \*STDIN or die "Can't dup STDIN: $!";
+    open my $dup, "<&", $rpipe or die "Can't dup rpipe: $!";
     push @fh, $dup;
     $mw->fileevent($dup, "readable", sub { $callback_called++ });
 }
