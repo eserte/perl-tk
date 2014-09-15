@@ -14,7 +14,7 @@ use Tk;
 use Tk::LabEntry;
 use Tk::ROText;
 use strict;
-use vars qw/$EXIT $HN $ME $MW $PID/;
+use vars qw/$EXIT $MW $PID/;
 use subs qw/do_command fini init ipsnd list_subnet open_subnet
     pipe_in pipe_out read_sdb start_ipc_helper/;
 
@@ -211,9 +211,6 @@ sub init {
 	    $last_hot = $new_hot;
 	}
     });
-
-    chomp($HN = `hostname`);
-    $ME = getlogin;
 
     # Sanity check, see if the 4th line was read.
 
