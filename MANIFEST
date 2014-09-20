@@ -972,6 +972,7 @@ pod/DItem.pod
 pod/DupName/Dialog.pod
 pod/Entry.pod
 pod/Error.pod
+pod/ErrorDialog.pod
 pod/event.pod
 pod/Eventloop.pod
 pod/exit.pod
