@@ -137,7 +137,7 @@ my @tests =
     [qw(-insertbackground green green <bogus>)],
     [qw(-insertborderwidth 45 45 bogus)],
     [qw(-insertofftime 100 100)], # no strict integer check in Perl (was: 2.4)
-    [qw(-insertontime 47 47 e1)],
+    [qw(-insertontime 47 47 x1)],
     [qw(-insertwidth 2.3 2 47d)],
     [qw(-maxundo 5 5 noway)],
     [qw(-padx 3.4 3 2.4.)],
