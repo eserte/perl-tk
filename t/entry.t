@@ -89,8 +89,9 @@ $mw->option("add", "*Entry.font", "Helvetica -12");
 my $e = $mw->Entry(qw(-bd 2 -relief sunken))->pack;
 $mw->update;
 
-if (!$Xft) { # XXX Is this condition necessary?
+{
     my %fa = $mw->fontActual($e->cget(-font));
+    $fa{-family} = lc $fa{-family} if $fa{-family}; # normalize
     my %expected = (
 		    "-weight" => "normal",
 		    "-underline" => 0,
@@ -1069,8 +1070,9 @@ $e->configure(-textvariable => \$y);
 $e->update;
 is($e->get, "ab");
 # On Unix/X11 and Windows it's 24, on cygwin/X11 with Xvfb running it's 25,
-# on Mac OS X with XFT=1 and a remote Xserver it's 23:
-cmp_ok($e->reqwidth, ">=", 23);
+# on Mac OS X with XFT=1 and a remote Xserver it's 23.
+# And depending on installed fonts, it can be even 22:
+cmp_ok($e->reqwidth, ">=", 22);
 cmp_ok($e->reqwidth, "<=", 25);
 
 $mw->traceVdelete(\$x); # XXX why?
