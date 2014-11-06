@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '4.025';
+$VERSION = '4.026';
 
 # warn __FILE__." $VERSION\n";
 
