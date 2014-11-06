@@ -1,3 +1,35 @@
+Tk-804.032_500 release (2014-11-06)
+----------------------
+
+Fixes
+ Freetype header files may now be in /usr/include/freetype2/freetype.h
+ in newer freetype installations (e.g. Debian/jessie).
+ https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=740207
+
+ Tk::MainWindow::Create without args used to segfault.
+
+ Fix X11 discovery on non-x86_64 platforms (RT #95590).
+
+ Fix new sprintf warning with perl 5.21.x.
+
+ Workaround behaviour change in ExtUtils::MakeMaker 6.99_10 (PERL
+ value is now quoted), which caused build failures (RT #100044).
+
+Tests
+ Fix race condition in t/errordialog.t
+
+ t/create.t uses Test::More
+
+ Remove useless hostname and getlogin retrieval in t/fileevent.t
+ (RT #98889).
+
+ Use pipe instead of stdin in t/fileevent2.t (RT #98891).
+
+ Fix font-related issues with t/entry.t (RT #98831).
+
+Documentation
+ New Pod ErrorDialog.pod (github pull request #6).
+
 Tk-804.032 release (2014-01-26)
 ------------------
 
