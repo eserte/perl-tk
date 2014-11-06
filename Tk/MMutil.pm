@@ -115,19 +115,15 @@ sub mTk_CHO
  $self->{O_FILES} = [grep s/\.c(pp|xx|c)?$/$self->{OBJ_EXT}/i, @o_files] ;
  $self->{'MTK'}   = $mTk;
  my $tk = installed_tk();
- my $perl = $self->{'PERL'};
- if ($IsWin32 && !-f $perl && -f "$perl.exe")
-  {
-   print "perl=$perl X=$^X\n";
-   $perl = "$perl.exe";
-   $self->{'PERL'} = $perl;
-  }
+ my $perl = $^X;
  foreach my $file (sort keys %$mTk)
   {
    unless (-f $file && -M $file < -M $mTk->{$file})
     {
      warn "Extracting $file\n";
-     system($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
+     my @cmd = ($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
+     system @cmd;
+     die "The command '@cmd' failed with $?" if $? != 0;
     }
   }
 }
