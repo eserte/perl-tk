@@ -365,7 +365,8 @@ if ($win_arch eq 'x') {
   #
   unless (defined $xlib)
     {
-      $xlib = &lX11(0,chooseX11(</usr/X11*/lib>),chooseX11(</usr/lib/X11*>),</usr/Xfree*/lib>,'/usr/X386/lib')
+      $xlib = &lX11(0,chooseX11(</usr/X11*/lib>),chooseX11(</usr/lib/X11*>),</usr/Xfree*/lib>,'/usr/X386/lib',
+                    '/opt/X11/lib')
     }
 
   #
