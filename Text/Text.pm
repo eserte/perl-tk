@@ -61,6 +61,8 @@ sub bindRdOnly
  $mw->bind($class,'<Meta-B1-Motion>','NoOp');
  $mw->bind($class,'<Meta-1>','NoOp');
  $mw->bind($class,'<Alt-KeyPress>','NoOp');
+ $mw->bind($class,'<Meta-KeyPress>','NoOp');
+ $mw->bind($class,'<Control-KeyPress>','NoOp');
  $mw->bind($class,'<Escape>','unselectAll');
 
  $mw->bind($class,'<1>',['Button1',Ev('x'),Ev('y')]);
