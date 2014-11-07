@@ -37,7 +37,7 @@ $mw->geometry("+10+10");
     my @fam = ();
     eval { @fam = $mw->fontFamilies; };
     is($@, "", "fontFamilies");
-    cmp_ok(@fam,">",1, "Num. of font families=".scalar @fam);
+    cmp_ok(@fam,">=",1, "Num. of font families=".scalar @fam);
 }
 ##
 ## Tk800.003 writes 'ont ...' in warning instead of 'font ...'
