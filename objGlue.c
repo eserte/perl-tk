@@ -15,6 +15,10 @@
 #include "pTk/tkInt.h"
 #include "tkGlue.h"
 
+#if PERL_REVISION == 5 && PERL_VERSION < 10
+#define NEED_FIX_BUGGY_UTF8_STRING
+#endif
+
 static int
 Expire(int code)
 {
@@ -405,6 +409,7 @@ Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
 
 static char * LangString(SV *sv);
 
+#ifdef NEED_FIX_BUGGY_UTF8_STRING
 /*
  * Workaround for http://rt.cpan.org/Public/Bug/Display.html?id=41436
  * This seems to be necessary for perl < 5.10.0 and if a magic
@@ -433,6 +438,7 @@ FixBuggyUTF8String(SV *sv)
   }
  return s;
 }
+#endif
 
 static char *
 LangString(SV *sv)
@@ -582,10 +588,12 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
     {
      s = LangString(objPtr);
 #ifdef SvUTF8
+# ifdef NEED_FIX_BUGGY_UTF8_STRING
      if (!is_utf8_string(s,strlen(s)))
       {
        s = FixBuggyUTF8String(objPtr);
       }
+# endif
      if (!is_utf8_string(s,strlen(s)))
       {
        LangDebug("%s @ %d not utf8\n",__FUNCTION__,__LINE__);
