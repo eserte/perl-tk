@@ -35,6 +35,7 @@ typedef struct {
     int nfaces;
     FcCharSet *charset;
     FcPattern *pattern;
+    FcFontSet *set;
 
     Display *display;
     int screen;
@@ -158,6 +159,7 @@ InitFont(
     fontPtr->pattern = pattern;
     fontPtr->faces = (UnixFtFace *) ckalloc(set->nfont * sizeof(UnixFtFace));
     fontPtr->nfaces = set->nfont;
+    fontPtr->set = set;
 
     /*
      * Fill in information about each returned font
@@ -274,13 +276,14 @@ FinishedWithFont(
 	if (fontPtr->faces[i].ftFont) {
 	    XftFontClose(fontPtr->display, fontPtr->faces[i].ftFont);
 	}
-	if (fontPtr->faces[i].source) {
-	    FcPatternDestroy(fontPtr->faces[i].source);
-	}
 	if (fontPtr->faces[i].charset) {
 	    FcCharSetDestroy(fontPtr->faces[i].charset);
 	}
     }
+    free(fontPtr->faces);
+    FcFontSetDestroy(fontPtr->set);
+    FcPatternDestroy(fontPtr->pattern);
+    FcCharSetDestroy(fontPtr->charset);
     if (fontPtr->ftDraw) {
 	XftDrawDestroy(fontPtr->ftDraw);
     }
