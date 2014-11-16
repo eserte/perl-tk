@@ -115,7 +115,11 @@ foreach my $class (@class)
 
     eval "require Tk::$class;";
     is($@, "", "No error loading Tk::$class");
-    isa_ok("Tk::$class", 'Tk::Widget', "Tk::$class is a widget");
+ SKIP: {
+	skip "Test::More too old for isa_ok class check", 1
+	    if $Test::More::VERSION < 0.88;
+	isa_ok("Tk::$class", 'Tk::Widget');
+    }
 
     eval { $w = $mw->$class(); };
     is($@, "", "Can create $class widget");
