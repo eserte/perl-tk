@@ -2,6 +2,12 @@
 BEGIN { $|=1; $^W=1; }
 use strict;
 use Test::More;
+BEGIN {
+    # Test::More::note not available in older Test::More
+    if (!defined &note) {
+	*note = sub { diag @_ };
+    }
+}
 ##
 ## Almost all widget classes:  load module, create, pack, and
 ## destory an instance.
