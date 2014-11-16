@@ -148,6 +148,9 @@ catch_grabs {
 	@warnings = ();
 	local $SIG{__WARN__} = sub { push @warnings, @_ };
 	$t->eventGenerate('<Control-KeyPress>', -keysym=>'Left');
+	$t->after(100);
+	$t->update;
+
     }
     is("@warnings", "", "No utf-8 warnings");
     is($t->index("insert"), "1.0", "Text: left word movement");
@@ -156,6 +159,8 @@ catch_grabs {
 	@warnings = ();
 	local $SIG{__WARN__} = sub { push @warnings, @_ };
 	$t->eventGenerate('<Control-KeyPress>', -keysym=>'Right');
+     	$t->after(100);
+	$t->update;
     }
     is("@warnings", "", "No utf-8 warnings");
     is($t->index("insert"), "1.20", "Text: right word movement"); # XXX 1.20 correct?
