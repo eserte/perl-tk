@@ -17,9 +17,11 @@ ok Tk::IsParentProcess(), 'This is the parent';
 pipe(my($rdr,$wtr));
 if (fork == 0) {
     close $rdr;
+    select $wtr; $| = 1; select STDOUT; # autoflush, needed because of POSIX::_exit
     print $wtr (Tk::IsParentProcess() ? 'parent' : 'child'), "\n";
     print "# Child $$\n";
-    CORE::exit();
+    require POSIX;
+    POSIX::_exit(0);
 }
 else {
     close $wtr;

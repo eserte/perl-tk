@@ -48,7 +48,8 @@ if (fork == 0) {
     kill USR2 => $ppid;
     select undef,undef,undef,0.2;
     kill USR2 => $ppid;
-    CORE::exit;
+    require POSIX;
+    POSIX::_exit(0);
 }
 
 $mw->after(500, sub { $mw->destroy });
