@@ -32,3 +32,5 @@ matrix:
     env: DISPLAY=:123 WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.8"
     env: DISPLAY=:123 WINDOW_MANAGER=twm USE_XFT=no
+  - perl: "5.20"
+    env: DISPLAY=:123 WINDOW_MANAGER=twm USE_XFT=no
