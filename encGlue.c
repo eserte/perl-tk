@@ -127,7 +127,7 @@ Tcl_UtfPrev (CONST char * src,CONST char * start)
  dTHX;
  U8 *s = (U8 *) src;
  if (src > start)
-  return (CONST char *) Perl_utf8_hop(aTHX_ s,-1);
+  return (CONST char *) utf8_hop(s,-1);
  else
   return (CONST char *) s;
 }
@@ -137,7 +137,7 @@ Tcl_UtfAtIndex (CONST char * src, int index)
 {
  dTHX;
  U8 *s = (U8 *) src;
- return (CONST char*)Perl_utf8_hop(aTHX_ s,index);
+ return (CONST char*)utf8_hop(s,index);
 }
 
 int
