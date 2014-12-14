@@ -25,7 +25,7 @@ sub HList {
     $FOLDIMG = $TOP->Bitmap(-file => Tk->findINC('folder.xbm'));
 
     my $root = Tk->findINC('demos');
-    my $olddir = cwd;
+    my $olddir = getcwd;
     chdir $root;
     show_dir '.', $root, $h;
     chdir $olddir;

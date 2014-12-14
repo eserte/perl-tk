@@ -7,7 +7,7 @@ use Tk;
 
 BEGIN {
     if (!eval q{
-	use Cwd;
+	use Cwd 'getcwd';
 	use File::Spec;
 	use Test::More;
 	1;
@@ -52,18 +52,18 @@ if (eval { require File::Temp; require File::Spec; 1 }) {
 	}
     }
 }
-$testdir = cwd if !$testdir;
+$testdir = getcwd if !$testdir;
 
 $f->configure(-directory => $testdir);
 $mw->update;
 pass("After setting directory to " . $testdir);
 
 {
-    my $d = $mw->DirTreeDialog(-initialdir => cwd);
+    my $d = $mw->DirTreeDialog(-initialdir => getcwd);
     isa_ok($d, "Tk::DirTreeDialog");
     $mw->after(100, sub { $d->{ok} = 1 });
     my $got_dir = $d->Show;
-    is($got_dir, cwd, "DirTreeDialog returned expected directory");
+    is($got_dir, getcwd, "DirTreeDialog returned expected directory");
 }
 
 if ($ENV{BATCH}) {

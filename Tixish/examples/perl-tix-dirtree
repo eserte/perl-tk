@@ -18,7 +18,7 @@ MainLoop();
 sub main {
     my( $top ) = @_;
 
-    my $current_dir = cwd;
+    my $current_dir = getcwd;
 
     my $tree = $top->Scrolled( qw/DirTree
                                -width 35 -height 30
