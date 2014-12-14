@@ -1,3 +1,8 @@
+Deal with global destruction in child processes. See RT #100399 and
+commit 643f7446ab4c457efac4c2527cf893502d0a3b62: since perl 5.16, core
+dumps may happen if exiting a child process connected to Tk windows
+with exit().
+
 Port all of Tcl/Tk test suite to Perl/Tk (text.test etc.). t/listbox.t
 and t/entry.t was a beginning.
 
