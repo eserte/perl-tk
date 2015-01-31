@@ -45,7 +45,7 @@ to 1/10 the range of the scale.
 
 =item Switch:	B<-command>
 
-Specifies the prefix of a L<perl/Tk callback|Tk::callbacks> to invoke whenever the scale's
+Specifies the prefix of a L<perlE<sol>Tk callback|Tk::callbacks> to invoke whenever the scale's
 value is changed via a method.
 The actual command consists
 of this option followed by a space and a real number indicating the

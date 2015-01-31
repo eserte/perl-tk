@@ -41,7 +41,7 @@ B<-text>
 B<-textvariable>
 B<-underline>
 B<-wraplength>
-	
+
 See L<Tk::options> for details of the standard options.
 
 =head1 WIDGET-SPECIFIC OPTIONS
@@ -54,7 +54,7 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-command>
 
-Specifies a L<perl/Tk callback|Tk::callbacks> to associate with the button.  This command
+Specifies a L<perlE<sol>Tk callback|Tk::callbacks> to associate with the button.  This command
 is typically invoked when mouse button 1 is released over the button
 window.  The button's global variable (B<-variable> option) will
 be updated before the command is invoked.
@@ -228,7 +228,7 @@ following: it can display itself in either of three different
 ways, according to the B<state> option;
 it can be made to appear
 raised, sunken, or flat; it can be made to flash; and it invokes
-a L<perl/Tk callback|Tk::callbacks> whenever mouse button 1 is clicked over the
+a L<perlE<sol>Tk callback|Tk::callbacks> whenever mouse button 1 is clicked over the
 checkbutton.
 
 In addition, checkbuttons can be I<selected>.
@@ -286,8 +286,8 @@ This command is ignored if the checkbutton's state is B<disabled>.
 
 Does just what would have happened if the user invoked the checkbutton
 with the mouse: toggle the selection state of the button and invoke
-the L<perl/Tk callback|Tk::callbacks> associated with the checkbutton, if there is one.
-The return value is the return value from the L<perl/Tk callback|Tk::callbacks>, or an
+the L<perlE<sol>Tk callback|Tk::callbacks> associated with the checkbutton, if there is one.
+The return value is the return value from the L<perlE<sol>Tk callback|Tk::callbacks>, or an
 empty string if there is no command associated with the checkbutton.
 This command is ignored if the checkbutton's state is B<disabled>.
 

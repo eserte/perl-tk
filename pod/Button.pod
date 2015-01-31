@@ -56,7 +56,7 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-command>
 
-Specifies a L<Perl/Tk callback|Tk::callbacks> to associate with the
+Specifies a L<PerlE<sol>Tk callback|Tk::callbacks> to associate with the
 button.  This command is typically invoked when mouse button 1 is
 released over the button window.
 
@@ -174,7 +174,7 @@ the B<-state> option;
 it can be made to appear raised, sunken, or flat;
 and it can be made to flash.  When a user invokes the
 button (by pressing mouse button 1 with the cursor over the
-button), then the L<perl/Tk callback|Tk::callbacks> specified in the B<-command>
+button), then the L<perlE<sol>Tk callback|Tk::callbacks> specified in the B<-command>
 option is invoked.
 
 =head1 WIDGET METHODS
