@@ -35,6 +35,14 @@
 #define UTF8_MAXBYTES_CASE UTF8_MAXLEN_UCLC
 #endif
 
+/* Workaround for immediate crash with perl 5.19.9+ and without XFT
+ * See https://rt.cpan.org/Ticket/Display.html?id=96543 and
+ * https://rt.perl.org/Ticket/Display.html?id=120626
+ */
+#if !defined(USE_XFT_FONTS) && PERL_VERSION > 19 || (PERL_VERSION == 19 && PERL_SUBVERSION >= 9)
+#define NEED_PUSHSTACK_HACK
+#endif
+
 /* -------------------------------------------------------------------------- */
 /* UTF8-ness routines
 /* -------------------------------------------------------------------------- */
@@ -593,6 +601,9 @@ Tcl_GetEncoding (Tcl_Interp * interp, CONST char * name)
    dSP;
    ENTER;
    SAVETMPS;
+#ifdef NEED_PUSHSTACK_HACK
+   PUSHSTACKi(PERLSI_REQUIRE);
+#endif
    PUSHMARK(sp);
    XPUSHs(sv_2mortal(newSVpv("Tk",0)));
    XPUSHs(nmsv);
@@ -604,6 +615,9 @@ Tcl_GetEncoding (Tcl_Interp * interp, CONST char * name)
    he = hv_store_ent(encodings,nmsv,newSVsv(sv),0);
    if (0 && !SvOK(sv))
     warn("Cannot find '%s'",name);
+#ifdef NEED_PUSHSTACK_HACK
+   POPSTACK;
+#endif
    FREETMPS;
    LEAVE;
   }
