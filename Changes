@@ -1,3 +1,40 @@
+Tk-804.032_501 release (2015-01-31)
+----------------------
+
+Fixes
+ Teach perl/Tk where OS X Yosemite Xquartz puts the X11 files
+ (github pull request #12)
+
+ Pushstack experiment to workaround crashes with perl 5.20.x and XFT=0
+ (RT #96543)
+
+ Tk::Text: don't insert ctrl and meta key presses
+ (github issue #9)
+
+ Fix memory leak in canvas text item handling with XFT=1
+ (RT #100211)
+
+ Use public version of Perl_utf8_hop (RT #100878)
+
+ FixBuggyUTF8String is not called anymore for new perls
+
+Improvements
+ Use Cwd::getcwd() instead of Cwd::cwd() (performance improvement)
+
+Tests
+ t/font.t does not fail with only one font family installed
+ (RT #99411)
+
+ unicode.t - update textwidget before examining new state
+ (RT #100153)
+
+ Compatibility with old Test::More versions without note() and isa_ok
+ class check
+
+ Workaround for core dumps in some fork-using tests (RT #100399)
+
+ Workaround for more timing problems in wm-tcl.h 
+
 Tk-804.032_500 release (2014-11-06)
 ----------------------
 
