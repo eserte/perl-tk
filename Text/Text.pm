@@ -21,7 +21,7 @@ use Text::Tabs;
 
 use vars qw($VERSION);
 #$VERSION = sprintf '4.%03d', q$Revision: #24 $ =~ /\D(\d+)\s*$/;
-$VERSION = '4.029';
+$VERSION = '4.030';
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
