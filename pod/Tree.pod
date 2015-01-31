@@ -150,7 +150,7 @@ expression. There are just three metasymbols:
 at the beginning of the C<treeRegExp> same as in Perl regular
 expressions
 
-=item *
+=item Z<>*
 
 anything
 
@@ -162,19 +162,19 @@ expressions
 =back
 
 Examples:
-  
+
   $tree->add_pathimage('^root','openfolder','folder');
-  
+
 matches C<root>, C<root.foo>, C<root.bar>, but not C<foo.root>
 
   $tree->add_pathimage('root.*.class','openfolder','folder');
-  
+
 matches all paths containing C<< root.<anything>.class >>, but not
 C<< root.<anything>.<anything>.class >> C<*> is one part of the path. If
 you want to use a wildcard for two steps, you have to use C<*.*>.
 
   $tree->add_pathimage('class$','openfolder','folder');
-  
+
 This matches all path with C<class> at the end.
 
 =item I<$tree>-E<gt>B<autosetmode>
@@ -199,7 +199,7 @@ returns the number of subentries in the given path.
 
   my @childentries = $tree->child_entries('root.bar');
   # returns (root.bar.bar1, root.bar.bar2)
-  
+
   my $nr_of_subentries = $tree->child_entries('root',2);
   # returns 4
 
