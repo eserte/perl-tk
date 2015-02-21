@@ -2014,6 +2014,7 @@ t/objglue.t
 t/optmenu.t
 t/photo.t
 t/pixmap.t
+t/pod.t
 t/progbar.t
 t/property.t
 t/regexp.t
