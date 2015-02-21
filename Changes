@@ -1,3 +1,9 @@
+Tk-804.033 release (2015-02-21)
+------------------
+
+Tests
+ New t/pod.t test (github pull request #16)
+
 Tk-804.032_501 release (2015-01-31)
 ----------------------
 
