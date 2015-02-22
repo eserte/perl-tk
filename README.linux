@@ -13,6 +13,11 @@ The following system packages should be installed:
     libpng-dev libz-dev (for using system library for Tk::PNG)
     libjpeg-dev (for using system library for Tk::JPEG)
 
+Command lines:
+
+    apt-get install libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev
+    aptitude install libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev
+
 CentOS, RedHat, Fedora:
 
 The following system packages should be installed:
@@ -21,6 +26,10 @@ The following system packages should be installed:
     libXft-devel (for freetype support, XFT=1)
     libpng-devel zlib-devel (for using system library for Tk::PNG)
     libjpeg-devel (for using system library for Tk::JPEG)
+
+Command line:
+
+    yum install libX11-devel libXft-devel libpng-devel zlib-devel libjpeg-devel
 
 With all these requirements, building Perl/Tk is straightforward:
 
