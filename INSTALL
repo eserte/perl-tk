@@ -9,6 +9,9 @@ On Windows platform, replace make by either dmake or nmake. Please
 read README-Strawberry.txt and README-ActiveState.txt for additional
 information for Strawberry Perl respective ActivePerl.
 
+Don't try a parallel build (e.g. using "make -jX") --- this won't work
+yet, and may produce broken builds.
+
 For other systems, please refer to the specific README.$OS file for
 additional information.
 

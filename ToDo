@@ -30,6 +30,8 @@ Try visual c+nmake build on MSWin32.
 cygwin build seems to fail if doing in a directory with spaces, eg.
 /cygdrive/c/documents and settings/...
 
+Make parallel builds (make -jX ...) possible.
+
 Documentation:
 
 Create a new document Tk::unicode to explain common pitfalls with
