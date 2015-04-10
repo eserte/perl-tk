@@ -1,4 +1,4 @@
-LIBRARY
+LIBRARY Z
 ; zlib data compression library
 
 EXPORTS
