@@ -61,8 +61,10 @@ specified by -rows (default 10), and number of columns specified by -columns
 If the Table is told it can take the keyboard focus then cursor and scroll
 keys scroll the displayed widgets.
 
-The Table will create and manage its own scrollbars if requested via
--scrollbars.
+C<-scrollbars>. By default, scrollbars will be added C<nw>.
+To disable scrollbars, set C<-scrollbars> to an empty string:
+
+  $table = $parent->Table(-scrollbars => '', ...);
 
 The table can be emptied using
 
@@ -71,7 +73,7 @@ The table can be emptied using
 the widgets which were in the table are destroyed.
 
 
-The Tk::Table widget is derived from a Tk::Frame, so inherits all its
+The Tk::Table widget is derived from a L<Tk::Frame>, so inherits all its
 configure options.
 
 The default focus traversal is giving the focus only to the table
