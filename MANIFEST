@@ -2010,6 +2010,7 @@ t/magic.t
 t/mega.t
 t/msgbox.t
 t/mwm.t
+t/notebook.t
 t/objglue.t
 t/optmenu.t
 t/photo.t
