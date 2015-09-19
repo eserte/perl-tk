@@ -10,7 +10,7 @@ package Tk::NoteBook;
 use vars qw($VERSION);
 
 #$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
-$VERSION = '4.011';
+$VERSION = '4.012';
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -323,10 +323,11 @@ sub FindMenu {
     my $page;
     foreach $page (@{$w->{'windows'}}) {
 	my $i = $w->pagecget($page, -underline);
+	next if $i < 0;
 	my $l = $w->pagecget($page, -label);
 	next if (not defined $l);
 	my $c = substr($l, $i, 1);
-	if ($char =~ /$c/i) {
+	if ($char =~ /\Q$c/i) {
 	    if ($w->pagecget($page, -state) ne 'disabled') {
 		$w->raise($page);
 		return $w;
