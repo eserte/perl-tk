@@ -1,3 +1,6 @@
+branches:
+ except:
+  - /appveyor/
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq xvfb libx11-dev $([ "$USE_XFT" = "no" ] || echo -n "libfreetype6-dev libxft-dev") $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kde-window-manager" || echo -n $WINDOW_MANAGER)
