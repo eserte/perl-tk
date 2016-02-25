@@ -439,7 +439,7 @@ EOF
    {
     # Found basic X libraries now see if we can find -lXft
 
-    my $ftinc = Ift("/usr/include","/usr/local/include",$X11INC||());
+    my $ftinc = Ift("/usr/include","/usr/local/include",$X11INC||(),"/opt/X11/include");
     if ($ftinc)
      {
       print "xlib='$xlib' xinc='$xinc'\n";
