@@ -91,7 +91,7 @@ sub TODO_xscrollcommand_problem (&) {
 
 sub TODO_fluxbox_problem (&) {
     my $code = shift;
-    local $TODO;
+    local $TODO = $TODO;
     $TODO = "May fail under some conditions on Fluxbox"  if !$TODO && $fluxbox_problems;
     local $Test::Builder::Level = $Test::Builder::Level + 2;
     $code->();
@@ -99,7 +99,7 @@ sub TODO_fluxbox_problem (&) {
 
 sub TODO_kwin_problem (&) {
     my $code = shift;
-    local $TODO;
+    local $TODO = $TODO;
     $TODO = "May fail under some conditions on kwin"  if !$TODO && $kwin_problems;
     local $Test::Builder::Level = $Test::Builder::Level + 2;
     $code->();
