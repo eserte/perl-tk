@@ -17,6 +17,8 @@ matrix:
  include:
   - perl: "5.14"
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm WITH_TEST_POD=no LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+  - perl: "5.22"
+    env: WINDOW_MANAGER=twm
   - perl: "5.20"
     env: WINDOW_MANAGER=twm
 ## t/fbox.t fails, not reproducible on a freebsd system
