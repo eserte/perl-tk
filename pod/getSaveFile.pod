@@ -1,0 +1,11 @@
+=head1 NAME
+
+Tk::getSaveFile - pop up a dialog box for the user to select a file to save.
+
+=for category Popups and Dialogs
+
+=head1 DESCRIPTION
+
+See L<Tk::getOpenFile>.
+
+=cut
