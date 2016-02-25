@@ -71,7 +71,7 @@ ok(Tk::Exists($mw));
 my %wm_info = wm_info($mw);
 my $wm_name = $wm_info{name};
 
-#my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
+my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
 my $fluxbox_problems  = defined $wm_name && $wm_name eq 'Fluxbox';
 #my $metacity_problems = defined $wm_name && $wm_name eq 'Metacity';
 #my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
@@ -93,6 +93,14 @@ sub TODO_fluxbox_problem (&) {
     my $code = shift;
     local $TODO;
     $TODO = "May fail under some conditions on Fluxbox"  if !$TODO && $fluxbox_problems;
+    local $Test::Builder::Level = $Test::Builder::Level + 2;
+    $code->();
+}
+
+sub TODO_kwin_problem (&) {
+    my $code = shift;
+    local $TODO;
+    $TODO = "May fail under some conditions on kwin"  if !$TODO && $kwin_problems;
     local $Test::Builder::Level = $Test::Builder::Level + 2;
     $code->();
 }
@@ -753,7 +761,9 @@ is($lb->index('@0,0'), 13);
 mkPartial();
 $partial_lb->see(4);
 TODO_fluxbox_problem {
-    is($partial_lb->index('@0,0'), 1);
+    TODO_kwin_problem {
+	is($partial_lb->index('@0,0'), 1);
+    };
 };
 
 eval { $lb->selection };
