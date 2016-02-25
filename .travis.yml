@@ -10,6 +10,8 @@ before_install:
  - Xvfb :123 &
  - export DISPLAY=:123
  - (sleep 10; $WINDOW_MANAGER) &
+script:
+ - perl Makefile.PL && env HARNESS_TIMER=1 make test
 language: perl
 matrix:
  include:
