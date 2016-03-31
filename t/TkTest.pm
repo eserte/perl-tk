@@ -1,4 +1,4 @@
-# Copyright (C) 2003,2006,2007,2010,2013 Slaven Rezic. All rights reserved.
+# Copyright (C) 2003,2006,2007,2010,2013,2016 Slaven Rezic. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -6,7 +6,7 @@ package TkTest;
 
 use strict;
 use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
-$VERSION = '4.012';
+$VERSION = '4.013';
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair checked_test_harness);
@@ -154,7 +154,7 @@ sub wm_info ($) {
 		($wm_version) = eval { $mw->property('get', '_METACITY_VERSION', $windowid) };
 	    } else {
 		# just guess the VERSION property
-		my($maybe_wm_version) = eval { $mw->property('get', '_'.$wm_name.'_VERSION', $windowid) };
+		my($maybe_wm_version) = eval { $mw->property('get', '_'.uc($wm_name).'_VERSION', $windowid) };
 		if ($maybe_wm_version) {
 		    $wm_version = $maybe_wm_version;
 		} else {
