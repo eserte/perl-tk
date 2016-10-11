@@ -31,6 +31,25 @@ Command line:
 
     yum install libX11-devel libXft-devel libpng-devel zlib-devel libjpeg-devel
 
+openSUSE (12.x, 13.x, Leap, Tumbleweed):
+
+The following system packages should be installed:
+
+    libX11-devel (minimal requirement for basic compilation of Perl/Tk)
+    libXft-devel (for freetype support, XFT=1)
+    libpng16-devel zlib-devel (for using system library for Tk::PNG)
+    libjpeg8-devel (for using system library for Tk::JPEG)
+
+  Note that the 16 in libpng16-devel and 8 in libjpeg8-devel might differ
+  per version of your distribution. You can find out what version your
+  distribution support using
+
+    zypper search libpng libjpeg
+
+Command line:
+
+    zypper in -l libX11-devel libXft-devel libpng16-devel zlib-devel libjpeg8-devel
+
 With all these requirements, building Perl/Tk is straightforward:
 
     perl Makefile.PL
