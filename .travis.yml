@@ -24,6 +24,9 @@ matrix:
     env: WINDOW_MANAGER=twm USE_XFT=no
   - perl: "5.20"
     env: WINDOW_MANAGER=twm USE_XFT=no WITH_TEST_POD=yes
+# XXX often failures in t/wm-tcl.t 261 or t/listbox.t 493
+ allow_failures:
+  - env: WINDOW_MANAGER=fluxbox
 
 before_install:
  - sudo apt-get update -qq
