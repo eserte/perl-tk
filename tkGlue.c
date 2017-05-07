@@ -3694,6 +3694,10 @@ Perl_Value(pTHX_ IV ix, SV *sv)
     some magic list or be careful how we insert ourselves in the list?
 
   */
+  /* This seems also to be wrong in some cases --- see t/sv.t and
+     RT #121528
+  */
+#if 0
  if (!SvPOK(sv) && SvPOKp(sv))
   SvPOK_on(sv);
 
@@ -3702,6 +3706,7 @@ Perl_Value(pTHX_ IV ix, SV *sv)
 
  if (!SvIOK(sv) && SvIOKp(sv))
   SvIOK_on(sv);
+#endif
  return 0;
 }
 

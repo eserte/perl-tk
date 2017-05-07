@@ -53,9 +53,9 @@ $mw->geometry('+0+0');
     my $e = $mw->Entry(-textvariable => \$val)->pack;
     { no warnings 'void'; $val * 1.0 }
 
-    local $TODO; $TODO = "Known to fail with perl >= 5.18" if $] >= 5.018;
+    # used to fail with perl >= 5.18
     is $val * 1, 0.20 or
-	do { require Devel::Peek; Devel::Peek::Dump($val) }; # pv_dump says: FLAGS = (PADMY,IOK,NOK,POK,pIOK,pNOK,pPOK,UTF8)
+	do { require Devel::Peek; Devel::Peek::Dump($val) };
 
     $e->destroy;
 }
@@ -69,9 +69,9 @@ $mw->geometry('+0+0');
     my $e = $mw->Entry(-textvariable => \$val)->pack;
     { no warnings 'void'; $val * 1.0 }
 
-    local $TODO; $TODO = "Known to fail with perl >= 5.18" if $] >= 5.018;
+    # used to fail with perl >= 5.18
     is $val * 1, 0.20 or
-	do { require Devel::Peek; Devel::Peek::Dump($val) }; # pv_dump says: FLAGS = (PADMY,IOK,NOK,POK,pIOK,pNOK,pPOK,UTF8)
+	do { require Devel::Peek; Devel::Peek::Dump($val) };
 
     $e->destroy;
 }
