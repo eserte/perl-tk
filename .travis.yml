@@ -14,6 +14,7 @@ matrix:
     env: WINDOW_MANAGER=xfwm4 LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.16"
     env: WINDOW_MANAGER=fluxbox
+    dist: trusty
   - perl: "5.14"
     env: WINDOW_MANAGER=sawfish LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.12"
