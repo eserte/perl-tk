@@ -930,9 +930,9 @@ AllocStringEntry(tablePtr, keyPtr)
 
     size = sizeof(Tcl_HashEntry) + strlen(string) + 1 - sizeof(hPtr->key);
     if (size < sizeof(Tcl_HashEntry))
-	size = sizeof(Tcl_HashEntry);
+        size = sizeof(Tcl_HashEntry);
     hPtr = (Tcl_HashEntry *) ckalloc(size);
-    strcpy(hPtr->key.string, string);
+    memcpy(hPtr->key.string, string, strlen(string) + 1);
     return hPtr;
 }
 
