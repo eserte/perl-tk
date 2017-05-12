@@ -27,7 +27,7 @@
 #ifdef HAVE_IMG_H
 #   include <png.h>
 #else
-#   include "png.h"
+#   include "libpng/png.h"
 #endif
 #endif
 
