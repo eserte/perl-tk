@@ -1,3 +1,38 @@
+Tk-804.033_500 release (2017-08-20)
+----------------------
+
+Fixes
+ Fix aborts on OS X Sierra, introduced by latest clang/llvm
+ strcpy/strncpy (RT #121631, github pull request #28 by Mark Aufflick)
+
+ No special xOKp handling in Perl_Value (RT #121528)
+
+ Add freetype2 path on MacOSX / XQuartz to inc search paths
+ (github pull request #21 by Christoph Lamprecht)
+
+ Fix Tk::NoteBook's FindMenu (Martin Jacobs)
+
+Documentation
+ Add Tk::getSaveFile Pod file (see also
+ github pull request #19)
+
+ Fix documentation about scrollbars
+ (github pull request #18 by asb-cpan)
+
+ Add openSUSE instructions to README.linux
+ (github pull request #25 by Tux)
+
+ Add documentation notes about "make -j"
+
+Tests
+ New test for Tk::NoteBook.
+
+ t/Trace.t is using now Test::More
+
+ travis-ci improvements
+
+ Introduce CI testing on appveyor
+
 Tk-804.033 release (2015-02-21)
 ------------------
 
@@ -285,7 +320,7 @@ Fixes
 
 New features
  BalloonInfo for HList
- Implementation by Christoph Lambrecht, documentation by
+ Implementation by Christoph Lamprecht, documentation by
  Slaven Rezic
  https://rt.cpan.org/Ticket/Display.html?id=55887
 

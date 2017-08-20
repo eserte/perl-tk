@@ -567,7 +567,8 @@ CODE:
  Tcl_Interp *interp;
  if (TkToWidget(tkwin,&interp) && interp)
   {STRLEN len;
-   unsigned char *data = (unsigned char *) SvPV(source, len);
+   SV * source_copy = newSVsv(source); /* technically this is leaking a SV, but there's no DeleteBitmap or so anyway */
+   unsigned char *data = (unsigned char *) SvPV(source_copy, len);
    STRLEN byte_line = (width + 7) / 8;
    if (len == height * byte_line)
     {
