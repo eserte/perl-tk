@@ -16,4 +16,4 @@ install:
 build_script:
   - perl Makefile.PL
   - set HARNESS_TIMER=1
-  - dmake test
+  - gmake test
