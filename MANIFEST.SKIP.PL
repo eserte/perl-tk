@@ -66,6 +66,7 @@ print SKIP <<'EOF'
 ^\.
 /\.
 C\+\+/Main$
+^appveyor\.yml$
 \bcore$
 \bConfig.pm$
 \bpTk/tkConfig\.h$
