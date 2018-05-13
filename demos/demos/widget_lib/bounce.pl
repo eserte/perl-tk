@@ -1,11 +1,12 @@
 # bounce.pl
 
 use Ball;
-use Tk qw/:eventtypes/;
+use Tk 800.000 qw/:eventtypes/;
 use subs qw/ClearMsg DoSingleStep NotDone ShowMsg SimStart SimStop mkmb/;
 use vars qw/$TOP/;
 
-my(@menu_button_list, $quit_flag, $quit_code,
+my($quit_flag, $quit_code,
+   $simulate_menu, $start_button_state, $stop_button_state, %menubar_msgs,
    $bounce_status, $bounce_speed, $bounce_running, $bounce_counter);
 
 sub bounce {
@@ -29,13 +30,12 @@ sub bounce {
     $TOP->title('Bouncing Ball Simulator');
     $TOP->iconname('bounce');
 
-    @menu_button_list = ();
     $quit_flag = 0;
     $quit_code = sub {$quit_flag = 1};
     $TOP->protocol('WM_DELETE_WINDOW' => $quit_code);
 
-    my $menubar = $TOP->Frame(qw/-relief raised -background DarkGreen -bd 2/);
-    $menubar->pack(-side => 'top', -fill => 'x');
+    %menubar_msgs = ();
+    my $menubar = $TOP->Menu(qw/-relief raised -background DarkGreen -bd 2 -type menubar -tearoff 0/);
 
     mkmb($menubar, 'File', 0, 'File related stuff',
          [
@@ -45,6 +45,7 @@ sub bounce {
           ['Exit',      sub{$TOP->bell},        0],
           ]);
 
+    $simulate_menu = 
     mkmb($menubar, 'Simulate', 0, 'Simulator control',
 	 [
 	  ['Start',     \&SimStart,    2],
@@ -70,7 +71,14 @@ sub bounce {
 	  ['Intro',     \&NotDone,     0],
 	  ['Contents',  \&NotDone,     0],
 	  ]);
-    $menu_button_list[$#menu_button_list]->pack(-side => 'right');
+    $menubar->bind(
+        '<<MenuSelect>>' => sub {
+            my $label = $_[0]->entrycget('active', -label);
+            ClearMsg;
+            ShowMsg($menubar_msgs{$label});
+        },
+    );
+    $TOP->configure(-menu => $menubar);
 
     my $feedback = $TOP->Frame();
     $feedback->pack(-side => 'bottom', -fill => 'x');
@@ -128,7 +136,7 @@ sub bounce {
     $w_ball->pack(qw(-side left -expand 1));
 
     $bounce_running = 0;
-    $menu_button_list[1]->cget(-menu)->entryconfigure(1, -state => 'disabled');
+    $simulate_menu->cget(-menu)->entryconfigure('Stop',  -state => 'disabled');
 
     $canvas->Ball;
     $canvas->Ball(-color => 'red', -size => 30, -position => [200, 75]);
@@ -178,20 +186,17 @@ sub bounce {
 sub mkmb {
 
     # (Ripped from nTk examples)
-    # Make a Menubutton widget; note that the menu is automatically created.
-    # We maintain a list of the Menubutton references since some callers
-    # need to refer to the Menubutton, as well as to suppress stray name
-    # warnings with Perl -w.
+    # C. A. Chavez: adapted to use Tk 8 style syntax
+    # so that the native menubar is used on macOS aqua. 
 
     my($mb0, $mb_label, $mb_label_underline, $mb_msg, $mb_list_ref) = @_;
-    my $mb = $mb0->Menubutton(
-        -text       => $mb_label,
+    my $mb = $mb0->cascade(
+        -label      => $mb_label,
 	-underline  => $mb_label_underline,
 	-background => 'DarkGreen',
         -foreground => 'Yellow',
+        -tearoff => 0,
     );
-    my($menu) = $mb->Menu(-tearoff => 0);
-    $mb->configure(-menu => $menu);
 
     my $mb_list;
     foreach $mb_list (@{$mb_list_ref}) {
@@ -203,11 +208,8 @@ sub mkmb {
             -foreground => 'White',
         );
     }
-    $mb->pack(-side => 'left');
-    $TOP->bind($mb, '<Enter>' => sub {ClearMsg; ShowMsg($mb_msg)});
-    $TOP->bind($mb, '<Leave>' => \&ClearMsg);
 
-    push @menu_button_list, $mb;
+    $menubar_msgs{$mb_label} = $mb_msg;
     return $mb;
 
 } # end mkmb
@@ -216,10 +218,10 @@ sub SimStart {
 
     if (not $bounce_running) {
         $bounce_running = 1;
-        $menu_button_list[1]->cget(-menu)->entryconfigure(0,
+        $simulate_menu->cget(-menu)->entryconfigure('Start',
             -state => 'disabled',
         );
-        $menu_button_list[1]->cget(-menu)->entryconfigure(1,
+        $simulate_menu->cget(-menu)->entryconfigure('Stop',
             -state => 'normal',
         );
     }
@@ -230,10 +232,10 @@ sub SimStop {
 
     if ($bounce_running) {
         $bounce_running = 0;
-        $menu_button_list[1]->cget(-menu)->entryconfigure(0,
+        $simulate_menu->cget(-menu)->entryconfigure('Start',
             -state => 'normal',
         );
-        $menu_button_list[1]->cget(-menu)->entryconfigure(1,
+        $simulate_menu->cget(-menu)->entryconfigure('Stop',
             -state => 'disabled',
         );
     }
