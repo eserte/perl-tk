@@ -1106,7 +1106,9 @@ sub MouseWheelBind
  # events on other platforms.
 
  $mw->Tk::bind($class, '<MouseWheel>',
-	       [ sub { $_[0]->yview('scroll',-($_[1]/120)*3,'units') }, Tk::Ev("D")]);
+    $mw->windowingsystem eq 'aqua'
+	    ? [ sub { $_[0]->yview('scroll',-($_[1]),'units') }, Tk::Ev("D")]
+	    : [ sub { $_[0]->yview('scroll',-($_[1]/120)*3,'units') }, Tk::Ev("D")]);
 
  if ($Tk::platform eq 'unix')
   {
