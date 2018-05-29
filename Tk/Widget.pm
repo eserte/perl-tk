@@ -1107,7 +1107,7 @@ sub MouseWheelBind
  $mw->Tk::bind($class, '<MouseWheel>',
 	       [ sub { $_[0]->yview('scroll',-($_[1]/120)*3,'units') }, Tk::Ev("D")]);
 
- if ($Tk::platform eq 'unix')
+ if ($mw->windowingsystem eq 'x11')
   {
    # Support for mousewheels on Linux/Unix commonly comes through mapping
    # the wheel to the extended buttons.  If you have a mousewheel, find
