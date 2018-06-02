@@ -13,7 +13,13 @@ Tk::Message - Create and manipulate Message widgets
 
 =head1 SYNOPSIS
 
-I<$message> = I<$parent>-E<gt>B<Message>(?I<options>?);
+    use Tk::Message;
+    ...
+    my $message = $parent->Message(
+        -text => 'somewhat long message text',
+        -aspect => 100,
+        -justify => 'left',
+    )->pack();
 
 =head1 STANDARD OPTIONS
 
