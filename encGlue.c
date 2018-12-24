@@ -270,21 +270,27 @@ int
 Tcl_UtfToLower (char * src)
 {
  dTHX;
- int len = strlen(src);
+ int src_len = strlen(src);
  U8 *s = (U8 *)src;
- U8 *s_end = src+len; /* XXX off by one? */
- U8 *d = malloc(len+1);
+ U8 *s_end = s+src_len; /* XXX off by one? */
+ int d_len = src_len+UTF8_MAXBYTES_CASE+1;
+ U8 *d = malloc(d_len+1);
  if (!d) { croak("Out of memory"); }
  U8 *d_current = d; 
  while (*s)
   {
    STRLEN len;
-   toLOWER_utf8_safe(s, s_end, d_current, &len );
+   toLOWER_utf8_safe(s, s_end, d_current, &len);
    d_current += len;
-   s += len;
+   s += UTF8SKIP(s);
+   if (*s && d_current >= d + src_len)
+    {
+     warn("Buffer too small for lowercasing <%s>", src);
+     break;
+    }
   }
  *d_current = '\0';
- strncpy(src, (char*)d, len);
+ strncpy(src, (char*)d, src_len);
  free(d);
  return (d_current-d);
  /* U8 *s = (U8 *)src; */
@@ -304,21 +310,27 @@ int
 Tcl_UtfToUpper(char * src)
 {
  dTHX;
- int len = strlen(src);
+ int src_len = strlen(src);
  U8 *s = (U8 *)src;
- U8 *s_end = src+len; /* XXX off by one? */
- U8 *d = malloc(len+1);
+ U8 *s_end = s+src_len; /* XXX off by one? */
+ int d_len = src_len+UTF8_MAXBYTES_CASE+1;
+ U8 *d = malloc(d_len+1);
  if (!d) { croak("Out of memory"); }
  U8 *d_current = d; 
  while (*s)
   {
    STRLEN len;
-   toUPPER_utf8_safe(s, s_end, d_current, &len );
+   toUPPER_utf8_safe(s, s_end, d_current, &len);
    d_current += len;
-   s += len;
+   s += UTF8SKIP(s);
+   if (*s && d_current >= d + src_len)
+    {
+     warn("Buffer too small for uppercasing <%s>", src);
+     break;
+    }
   }
  *d_current = '\0';
- strncpy(src, (char*)d, len);
+ strncpy(src, (char*)d, src_len);
  free(d);
  return (d_current-d);
  /* U8 *s = (U8 *)src; */
