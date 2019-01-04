@@ -79,28 +79,44 @@ int
 Tcl_UniCharIsAlpha(int ch)
 {
  dTHX;
- return isALPHA_uvchr(ch); /* XXX Perl_is_uni_alpha(aTHX_ ch); */
+#ifdef isALPHA_uvchr
+ return isALPHA_uvchr(ch);
+#else
+ return Perl_is_uni_alpha(aTHX_ ch);
+#endif
 }
 
 int
 Tcl_UniCharIsWordChar(int ch)
 {
  dTHX;
- return isALPHANUMERIC_uvchr(ch); /* XXX Perl_is_uni_alnum(aTHX_ ch); */
+#ifdef isALPHANUMERIC_uvchr
+ return isALPHANUMERIC_uvchr(ch);
+#else
+ return Perl_is_uni_alnum(aTHX_ ch);
+#endif
 }
 
 int
 Tcl_UniCharIsSpace(int ch)
 {
  dTHX;
- return isSPACE_uvchr(ch); /* XXX Perl_is_uni_space(aTHX_ ch); */
+#ifdef isSPACE_uvchr
+ return isSPACE_uvchr(ch);
+#else
+ return Perl_is_uni_space(aTHX_ ch);
+#endif
 }
 
 int
 Tcl_UniCharIsUpper(int ch)
 {
  dTHX;
- return isUPPER_uvchr(ch); /* XXX Perl_is_uni_upper(aTHX_ ch); */
+#ifdef isUPPER_uvchr
+ return isUPPER_uvchr(ch);
+#else
+ return Perl_is_uni_upper(aTHX_ ch);
+#endif
 }
 
 int
@@ -152,15 +168,18 @@ int
 Tcl_UtfToUniChar (CONST char * src,Tcl_UniChar * chPtr)
 {
  dTHX;
+#ifdef utf8_to_uvchr_buf
  UV len;
  *chPtr = utf8_to_uvchr_buf((U8 *)src, (U8 *)(src+7), &len); /* XXX why +7??? */
-/* #if defined(utf8_to_uvchr) */
-/*  STRLEN len; */
-/*  *chPtr = utf8_to_uv((U8 *)src,&len); */
-/* #else */
-/*  I32 len; */
-/*  *chPtr = utf8_to_uv((U8 *)src,&len); */
-/* #endif */
+#else
+#if defined(utf8_to_uvchr)
+ STRLEN len;
+ *chPtr = utf8_to_uv((U8 *)src,&len);
+#else
+ I32 len;
+ *chPtr = utf8_to_uv((U8 *)src,&len);
+#endif
+#endif
  return len;
 }
 
@@ -272,15 +291,21 @@ Tcl_UtfToLower (char * src)
  dTHX;
  int src_len = strlen(src);
  U8 *s = (U8 *)src;
+#ifdef toLOWER_utf8_safe
  U8 *s_end = s+src_len; /* XXX off by one? */
+#endif
  int d_len = src_len+UTF8_MAXBYTES_CASE+1;
- U8 *d = malloc(d_len+1);
+ U8 *d; Newx(d, d_len+1, U8);
  if (!d) { croak("Out of memory"); }
  U8 *d_current = d; 
  while (*s)
   {
    STRLEN len;
+#ifdef toLOWER_utf8_safe
    toLOWER_utf8_safe(s, s_end, d_current, &len);
+#else
+   toLOWER_utf8(s, d_current, &len);
+#endif
    d_current += len;
    s += UTF8SKIP(s);
    if (*s && d_current >= d + src_len)
@@ -291,19 +316,8 @@ Tcl_UtfToLower (char * src)
   }
  *d_current = '\0';
  strncpy(src, (char*)d, src_len);
- free(d);
+ Safefree(d);
  return (d_current-d);
- /* U8 *s = (U8 *)src; */
- /* U8 *d = s; */
- /* while (*s) */
- /*  { */
- /*   STRLEN len; */
- /*   Perl_to_utf8_lower(aTHX_ s, d, &len ); */
- /*   d += len; */
- /*   s += len; */
- /*  } */
- /* *d = '\0'; */
- /* return (d-(U8 *)src); */
 }
 
 int
@@ -312,15 +326,21 @@ Tcl_UtfToUpper(char * src)
  dTHX;
  int src_len = strlen(src);
  U8 *s = (U8 *)src;
+#ifdef toUPPER_utf8_safe
  U8 *s_end = s+src_len; /* XXX off by one? */
+#endif
  int d_len = src_len+UTF8_MAXBYTES_CASE+1;
- U8 *d = malloc(d_len+1);
+ U8 *d; Newx(d, d_len+1, U8);
  if (!d) { croak("Out of memory"); }
  U8 *d_current = d; 
  while (*s)
   {
    STRLEN len;
+#ifdef toUPPER_utf8_safe
    toUPPER_utf8_safe(s, s_end, d_current, &len);
+#else
+   toUPPER_utf8(s, d_current, &len);
+#endif
    d_current += len;
    s += UTF8SKIP(s);
    if (*s && d_current >= d + src_len)
@@ -331,19 +351,8 @@ Tcl_UtfToUpper(char * src)
   }
  *d_current = '\0';
  strncpy(src, (char*)d, src_len);
- free(d);
+ Safefree(d);
  return (d_current-d);
- /* U8 *s = (U8 *)src; */
- /* U8 *d = s; */
- /* while (*s) */
- /*  { */
- /*   STRLEN len; */
- /*   Perl_to_utf8_upper(aTHX_ s, d, &len ); */
- /*   d += len; */
- /*   s += len; */
- /*  } */
- /* *d = '\0'; */
- /* return (d-(U8 *)src); */
 }
 
 #else
