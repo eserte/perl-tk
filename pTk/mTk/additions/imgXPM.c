@@ -425,7 +425,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
     i = srcY;
     while (i-- > 0) {
 	p = Gets(handle, buffer,MAX_BUFFER);
-	while (((p = strchr(p,'\"')) == NULL) || ((strstr(p,"/*")) != NULL)) {
+	while (((p = strchr(p,'\"')) == NULL)) {
 	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
 		return TCL_ERROR;
@@ -437,7 +437,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 
     for (h = height; h > 0; h--) {
 	p = Gets(handle, buffer,MAX_BUFFER);
-	while (((p = strchr(p,'\"')) == NULL) || ((strstr(p,"/*")) != NULL)) {
+	while (((p = strchr(p,'\"')) == NULL)) {
 	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
 		return TCL_ERROR;
