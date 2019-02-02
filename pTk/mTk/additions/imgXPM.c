@@ -440,6 +440,9 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 	while (((p = strchr(p,'\"')) == NULL)) {
 	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
+		sprintf(buffer, "%d", h);
+		Tcl_AppendResult(interp, "XPM image file is truncated; still ", buffer, " line(s) need to be read",
+				 (char *) NULL);
 		return TCL_ERROR;
 	    }
 	    p = buffer;
