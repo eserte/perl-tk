@@ -324,7 +324,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 	int found;
 
 	p = Gets(handle, buffer,MAX_BUFFER);
-	while (((p = strchr(p,'\"')) == NULL) || ((strstr(p,"/*")) != NULL)) {
+	while (((p = strchr(p,'\"')) == NULL)) {
 	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
 		return TCL_ERROR;

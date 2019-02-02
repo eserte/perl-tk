@@ -15,7 +15,7 @@ $numFormats++ unless $@;
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
 
-plan tests => (2*(7 * $numFormats) + 2 + 2 + 1 + 2 + 2 + 2);
+plan tests => (2*(7 * $numFormats) + 2 + 2 + 1 + 2 + 2 + 2 + 2);
 
 my @files = ();
 
@@ -142,6 +142,26 @@ static char *noname[] = {
 "* c #6D4800",
 /* pixels */
 "innyymtytnnt>qqqqqq=qcickkk,rwq,qrr,rir,rq>qrrrrjrxiriitq=@/*/@o^#=r,rtifqq@#@#="
+};
+EOF
+    is $@, '', 'No error';
+    ok $image, "'/*' in XPM data caused no problem";
+}
+
+{
+    # Similar test case for RT #128103 (comment marker in colors section)
+    my $image = eval { $mw->Photo(-data => <<'EOF') };
+/* XPM */
+static char *noname[] = {
+/* width height ncolors chars_per_pixel */
+"80 1 4 1",
+/* colors */
+"  c #000000",
+". c #914800",
+"/ c #482455", /* weird color */
+"* c #6D4800",
+/* pixels */
+"................................................................................"
 };
 EOF
     is $@, '', 'No error';
