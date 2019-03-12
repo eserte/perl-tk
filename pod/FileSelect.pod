@@ -125,7 +125,7 @@ For example:
 
 ensures that the selected name is a directory.  Further, if an element of
 the list is an array reference, the first element is a code reference to a
-subroutine and the remaining optional elements are it's parameters.  The
+subroutine and the remaining optional elements are its parameters.  The
 subroutine is called like this:
 
     &verify_code($cd, $leaf, $P1, $P2, ... $Pn);

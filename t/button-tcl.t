@@ -758,7 +758,7 @@ test button-10.7 {ButtonVarProc procedure} {
     set x
 } {1}
 test button-10.8 {ButtonVarProc procedure, can't read variable} {
-    # This test does nothing but produce a core dump if there's a prbblem.
+    # This test does nothing but produce a core dump if there's a problem.
     deleteWindows
     catch {unset a}
     checkbutton .b1 -variable a

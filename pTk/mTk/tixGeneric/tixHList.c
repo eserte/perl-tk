@@ -3369,7 +3369,7 @@ void Tix_HLMarkElementDirty(wPtr, chPtr)
  *	None.
  *
  * Side effects:
- *	The element and all its decendants are marked non-dirty
+ *	The element and all its descendants are marked non-dirty
  *--------------------------------------------------------------
  */
 

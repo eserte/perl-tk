@@ -829,7 +829,7 @@ sub RecolorTree
 #
 # Arguments:
 # color - Name of starting color.
-# perecent - Integer telling how much to brighten or darken as a
+# percent - Integer telling how much to brighten or darken as a
 # percent: 50 means darken by 50%, 110 means brighten
 # by 10%.
 sub Darken

@@ -855,7 +855,7 @@ sub FindNext
 
  ## if searching forward, start search at end of selected block
  ## if backward, start search from start of selected block.
- ## dont want search to find currently selected text.
+ ## don't want search to find currently selected text.
  ## tag 'sel' may not be defined, use eval loop to trap error
  my $is_forward = $direction =~ m{^-f} && $direction eq substr("-forwards", 0, length($direction));
  eval {
@@ -1636,7 +1636,7 @@ sub clipboardColumnPaste
    $string = $w->get($current_line.'.0', $current_line.'.0 lineend');
    $string = expand($string);
    $string = substr($string, 0, $current_column + length($line));
-   chomp($string);  # dont delete a "\n" on end of line.
+   chomp($string);  # don't delete a "\n" on end of line.
    $string = unexpand($string);
    $delete_end_column = length($string);
 

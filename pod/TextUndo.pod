@@ -42,7 +42,7 @@ Additional methods for the C<TextUndo> widget are:
 =item $text->Load($filename);
 
 Loads the contents of the $filename into the text widget. Load()
-delete the previous contents of the text widget as well as it's
+delete the previous contents of the text widget as well as its
 undo history of the previous file.
 
 =item $text->Save(?$otherfilename?)

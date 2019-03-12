@@ -124,7 +124,7 @@ Construct() also arranges for the TraceText "instantiator" to call-out to the we
 
 Tk::TraceText::Populate defines the -textvariable option and provides a private method to establish the watchpoint. In Perl/Tk, all mega-widget options are specified via a ConfigSpecs() call, named after the C structure.
 
-Briefly, ConfigSpecs() names options and tells Perl/Tk what to do when one is specified on a configure() or cget() call. It also specifies the option's database name, class name and default value for option DB lookups. For our -textvariable option, the Perl/Tk framework invokes a METHOD (subroutine) by the same name as the option, minus the dash, of course. Other choices include CHILDREN, DECENDENTS, a name (or list of names) of a subwidget, etcetera.
+Briefly, ConfigSpecs() names options and tells Perl/Tk what to do when one is specified on a configure() or cget() call. It also specifies the option's database name, class name and default value for option DB lookups. For our -textvariable option, the Perl/Tk framework invokes a METHOD (subroutine) by the same name as the option, minus the dash, of course. Other choices include CHILDREN, DESCENDANTS, a name (or list of names) of a subwidget, etcetera.
 
 More details on mega-widget construction can be found in these man pages:
 
