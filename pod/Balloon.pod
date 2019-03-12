@@ -84,7 +84,7 @@ balloons.
 =head2 Balloon Position
 
 By default, the balloon pops up at the lower right side of the client.
-If it would extend outside the lower screen border, its positioned at the
+If it would extend outside the lower screen border, it's positioned at the
 upper right side. If it would extend outside the right screen border
 it's shown on the lower left side of the client. If it would extend
 outside both the lower and the right screen border, it's positioned

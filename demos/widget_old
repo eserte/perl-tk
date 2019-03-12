@@ -63,7 +63,7 @@ sub insert_with_tags {
 
 sub lsearch {
 
-    # Search the list using the supplied regular expression and return it's ordinal, or -1 if not found.
+    # Search the list using the supplied regular expression and return its ordinal, or -1 if not found.
 
     my($regexp, @list) = @_;
     my($i);

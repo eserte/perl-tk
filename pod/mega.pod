@@ -267,7 +267,7 @@ for special cleanup actions.  It differs from a normal B<destroy>
 in that all the widget's data structures are still intact.
 
 B<Comment:> This method could be used with any widgets not just
-for mega-widgets.  It's listed here because of it's usefulness.
+for mega-widgets.  It's listed here because of its usefulness.
 
 =head2 Populate
 

@@ -591,7 +591,7 @@ DdeServerProc (
 
 	    /*
 	     * Execute this script. The results will be saved into
-	     * a list object which will be retreived later. See
+	     * a list object which will be retrieved later. See
 	     * ExecuteRemoteObject.
 	     */
 

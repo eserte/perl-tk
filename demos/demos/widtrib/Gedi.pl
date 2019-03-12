@@ -247,7 +247,7 @@ TextUndo.pm
 =============
 
 TextUndo.pm is the second level module, being
-derived from the Text.pm module. As it's name
+derived from the Text.pm module. As its name
 implies, TextUndo supports "UNDO" capability.
 It now also supports "REDO" capability.
 

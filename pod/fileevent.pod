@@ -90,7 +90,7 @@ buggy handlers.
 =head1 BUGS
 
 On windows platforms B<fileevent> is limited in the types of filehandles
-that behave correctly. Making filefhandles non-blocking is only implemented
+that behave correctly. Making filehandles non-blocking is only implemented
 on a subset of UNIX platforms (see L<Tk::IO>).
 
 =head1 CREDITS
