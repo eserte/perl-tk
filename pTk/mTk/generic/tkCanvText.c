@@ -1234,8 +1234,7 @@ GetTextIndex(interp, canvas, itemPtr, obj, indexPtr)
 				 * index. */
 {
     TextItem *textPtr = (TextItem *) itemPtr;
-    size_t length;
-    int c;
+    int c, length;
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
     Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
     char *string;
