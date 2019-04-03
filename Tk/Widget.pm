@@ -1065,7 +1065,6 @@ sub XMouseWheelBind
 {
  my ($mw,$class) = @_;
  # <4> and <5> are how mousewheel looks on X
- # <4> and <5> are how mousewheel looks on X
  $mw->bind($class,'<Shift-4>',      ['xview','scroll',-1,'units']);
  $mw->bind($class,'<Shift-5>',      ['xview','scroll',1,'units']);
  $mw->bind($class,'<Button-6>',     ['xview','scroll',-1,'units']);
