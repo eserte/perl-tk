@@ -328,7 +328,7 @@ sub ConfigDefault
  #
  # $specs->{'-cursor'} = ['SELF',undef,undef,undef] unless (exists $specs->{'-cursor'});
 
- # Now some hacks that cause colours to propogate down a composite widget
+ # Now some hacks that cause colours to propagate down a composite widget
  # tree - really needs more thought, other options adding such as active
  # colours too and maybe fonts
 
