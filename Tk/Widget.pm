@@ -1112,7 +1112,7 @@ sub MouseWheelBind
    # Support for mousewheels on Linux/Unix commonly comes through mapping
    # the wheel to the extended buttons.  If you have a mousewheel, find
    # Linux configuration info at:
-   #   http://www.inria.fr/koala/colas/mouse-wheel-scroll/
+   #   http://linuxreviews.org/howtos/xfree/mouse/
    $mw->Tk::bind($class, '<4>',
 		 sub { $_[0]->yview('scroll', -3, 'units')
 			   unless $Tk::strictMotif;
