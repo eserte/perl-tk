@@ -143,7 +143,7 @@ sub Tk::Widget::traceVariable {
 
     # Need to add our internal callback to user's callback arg list
     # so we can call ours first, followed by the user's callback and
-    # any user arguments. Trace callbacks are activated as requied.
+    # any user arguments. Trace callbacks are activated as required.
 
     my $trace = $TRACE{$vref};
     if ( not defined $trace ) {
