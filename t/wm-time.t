@@ -21,6 +21,7 @@ my $mw = new MainWindow;
 
 my %wm_info = wm_info($mw);
 my $wm_name = $wm_info{name};
+$wm_name = '' unless defined $wm_name;
 
 my $initial_ok_delay = 0.4;
 # GNOME Shell is sometimes slow
