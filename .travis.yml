@@ -27,6 +27,8 @@ matrix:
     env: WINDOW_MANAGER=twm USE_XFT=no WITH_TEST_POD=yes
   - perl: "5.24-extras"
     env: WINDOW_MANAGER=twm
+  - perl: "5.30"
+    env: WINDOW_MANAGER=twm
 # XXX often failures in t/wm-tcl.t 261 or t/listbox.t 493
  allow_failures:
   - env: WINDOW_MANAGER=fluxbox
