@@ -17,14 +17,15 @@ sub photo1 {
 
     my $f1 = $TOP->Photo( -file => Tk->findINC( 'demos/images/teapot.ppm' ) );
     $l->configure( -image => $f1 );
-    $TOP->idletasks;
-    $TOP->after(2000);
+    $TOP->after(2000,
+        sub {
 
-    foreach my $x ( 50 .. 100 ) {
-	foreach my $y ( 50 .. 100 ) {
-	    $f1->transparencySet( $x, $y, 1 );
-	    $f1->update;
-	}
-    }
-
+            foreach my $x ( 50 .. 100 ) {
+            foreach my $y ( 50 .. 100 ) {
+                $f1->transparencySet( $x, $y, 1 );
+                $f1->update;
+            }
+            }
+        },
+    );
 } # end photo1
