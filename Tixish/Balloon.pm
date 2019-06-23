@@ -4,7 +4,7 @@
 #
 # This is a patched version of Balloon 3.037 - it adds support
 # for different orientations of the balloon widget, depending
-# on wether there's enough space for it. The little arrow now
+# on whether there's enough space for it. The little arrow now
 # should always point directly to the client.
 # Added by Gerhard Petrowitsch (gerhard.petrowitsch@philips.com)
 #
