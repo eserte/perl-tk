@@ -108,7 +108,7 @@ sub Populate {
 		    -cancelcommand => ['CALLBACK', 'cancelCommand', 'CancelCommand', undef],
 		    -motioncommand => ['CALLBACK', 'motionCommand', 'MotionCommand', undef],
 		    -background => ['DESCENDANTS', 'background', 'Background', '#C0C080'],
-                    -foreground => ['DESCENDANTS', 'foreground', 'Foreground', undef],
+		    -foreground => ['DESCENDANTS', 'foreground', 'Foreground', 'black'],
 		    -font => [$ml, 'font', 'Font', '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*'],
 		    -borderwidth => ['SELF', 'borderWidth', 'BorderWidth', 1],
                     -numscreens=>['PASSIVE', 'numScreens','NumScreens',1],
