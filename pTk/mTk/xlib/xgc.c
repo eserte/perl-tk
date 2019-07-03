@@ -347,7 +347,7 @@ XSetClipOrigin(display, gc, clip_x_origin, clip_y_origin)
  *	None.
  *
  * Side effects:
- *	Allocates or dealloates a TkpClipMask.
+ *	Allocates or deallocates a TkpClipMask.
  *
  *----------------------------------------------------------------------
  */
