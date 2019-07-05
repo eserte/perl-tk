@@ -35,7 +35,7 @@ matrix:
 
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq xvfb libx11-dev $([ "$USE_XFT" = "no" ] || echo -n "libfreetype6-dev libxft-dev") $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kde-window-manager" || echo -n $WINDOW_MANAGER)
+ - sudo apt-get install -qq xvfb libx11-dev $([ "$USE_XFT" = "no" ] || echo -n "libfreetype6-dev libxft-dev") $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kwin-x11" || echo -n $WINDOW_MANAGER)
  - '[ "$USE_SYSTEM_PERL" = "1" ] && perlbrew off || true'
 # optional, for tests
  - '[ "$WITH_TEST_POD" = "yes" ] && cpanm --quiet --notest Test::Pod || true'
