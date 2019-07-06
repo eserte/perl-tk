@@ -32,7 +32,7 @@ sub ctext {
 
     $c->addtag(qw/text withtag/,
         $c->create('text', 250, 200,
-            -text      => 'This is just a string of text to demonstrate the text facilities of canvas widgets. Bindings have been been defined to support editing (see above)."',
+            -text      => 'This is just a string of text to demonstrate the text facilities of canvas widgets. Bindings have been defined to support editing (see above)."',
             qw/-width 440 -anchor n -justify  left
 	       -font -*-Helvetica-Medium-R-Normal--*-240-*-*-*-*-*-*/
         ),
