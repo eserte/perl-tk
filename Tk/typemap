@@ -30,7 +30,7 @@ T_PVOBJ
 	    STRLEN sz;
 	    $var = ($type) SvPV((SV*)SvRV($arg),sz);
 	    if (sz != sizeof(*$var))
-	     croak(\"$arg too small (%d) for $var $type (%d)\",sz,sizeof(*$var));
+	     croak(\"$arg too small (%\"UVuf\") for $var $type (%\"UVuf\")\",sz,sizeof(*$var));
 	}
 	else
 	    croak(\"$var is not an object\")
