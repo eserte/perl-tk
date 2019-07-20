@@ -419,7 +419,7 @@ and a function
 
 =head1 Checking for trouble
 
-If you start with working TCL code, you can start convertion using
+If you start with working TCL code, you can start conversion using
 the above hints. Good indication that you are doing is OK is absence
 of C<sprintf> and C<sscanf> in your code (at least in the part that is
 working with interpreter).
