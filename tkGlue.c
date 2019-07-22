@@ -5493,7 +5493,7 @@ size_t size;
    sv_setiv(FindTkVarName(name,GV_ADD|GV_ADDMULTI),PTR2IV(table));
    if (size % sizeof(fptr))
     {
-     warn("%s is strange size %d",name,size);
+     warn("%s is strange size %"UVuf,name,size);
     }
    size /= sizeof(void *);
    for (i=0; i < size; i++)
