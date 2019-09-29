@@ -20,7 +20,7 @@ matrix:
     env: WINDOW_MANAGER=fluxbox
     dist: trusty
   - perl: "5.12"
-    env: WINDOW_MANAGER=kwin
+    env: WINDOW_MANAGER=twm
     dist: trusty
   - perl: "5.10"
     env: WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
@@ -38,7 +38,7 @@ matrix:
     env: WINDOW_MANAGER=twm
     dist: trusty
   - perl: "5.30"
-    env: WINDOW_MANAGER=twm
+    env: WINDOW_MANAGER=kwin
     dist: xenial
 # XXX often failures in t/wm-tcl.t 261 or t/listbox.t 493
  allow_failures:
