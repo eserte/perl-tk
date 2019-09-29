@@ -2,32 +2,32 @@ language: perl
 matrix:
  include:
   - perl: "5.14"
-    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm WITH_TEST_POD=no LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm WITH_TEST_POD=no
     dist: precise
   - perl: "5.22"
-    env: WINDOW_MANAGER=twm
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
     dist: xenial
   - perl: "5.20"
     env: WINDOW_MANAGER=twm
-    dist: precise
+    dist: trusty
 ## t/fbox.t fails, not reproducible on a freebsd system
 #  - perl: "5.18"
 #    env: WINDOW_MANAGER=metacity LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
   - perl: "5.18"
-    env: WINDOW_MANAGER=xfwm4 LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-    dist: precise
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=xfwm4 LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+    dist: trusty
   - perl: "5.16"
     env: WINDOW_MANAGER=fluxbox
     dist: trusty
   - perl: "5.12"
     env: WINDOW_MANAGER=kwin
-    dist: precise
+    dist: trusty
   - perl: "5.10"
     env: WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-    dist: precise
+    dist: trusty
   - perl: "5.8"
     env: WINDOW_MANAGER=twm USE_XFT=no
-    dist: precise
+    dist: trusty
   - perl: "5.26"
     env: WINDOW_MANAGER=sawfish LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
     dist: xenial
@@ -36,7 +36,7 @@ matrix:
     dist: xenial
   - perl: "5.24-extras"
     env: WINDOW_MANAGER=twm
-    dist: precise
+    dist: trusty
   - perl: "5.30"
     env: WINDOW_MANAGER=twm
     dist: xenial
