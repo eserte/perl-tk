@@ -273,7 +273,7 @@ Tcl_UtfToLower (char * src)
  while (*s)
   {
    STRLEN len;
-   Perl_to_utf8_lower(aTHX_ s, d, &len );
+   toLOWER_utf8_safe(s, s + UTF8_CHK_SKIP(s), d, &len );
    d += len;
    s += len;
   }
@@ -290,7 +290,7 @@ Tcl_UtfToUpper(char * src)
  while (*s)
   {
    STRLEN len;
-   Perl_to_utf8_upper(aTHX_ s, d, &len );
+   toUPPER_utf8_safe(s, s + UTF8_CHK_SKIP(s), d, &len );
    d += len;
    s += len;
   }
