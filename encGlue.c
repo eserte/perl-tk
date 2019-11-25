@@ -13,6 +13,8 @@
 #include <langinfo.h>
 #endif
 
+#include "ppport.h"
+
 #define U8 U8
 #include "tkGlue.def"
 
