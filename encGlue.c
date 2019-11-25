@@ -13,6 +13,7 @@
 #include <langinfo.h>
 #endif
 
+#define NEED_utf8_to_uvchr_buf
 #include "ppport.h"
 
 #define U8 U8
@@ -26,12 +27,8 @@
 #include "pTk/tkWinInt.h"
 #endif
 
-
 #ifdef SvUTF8
 
-#ifndef utf8_to_uv
-#define utf8_to_uv utf8_to_uvchr
-#endif
 
 /* Workaround for immediate crash with perl 5.19.9+ and without XFT
  * See https://rt.cpan.org/Ticket/Display.html?id=96543 and
@@ -150,13 +147,8 @@ int
 Tcl_UtfToUniChar (CONST char * src,Tcl_UniChar * chPtr)
 {
  dTHX;
-#if defined(utf8_to_uvchr)
  STRLEN len;
- *chPtr = utf8_to_uv((U8 *)src,&len);
-#else
- I32 len;
- *chPtr = utf8_to_uv((U8 *)src,&len);
-#endif
+ *chPtr = utf8_to_uvchr_buf((U8 *)src, src + UTF8_CHK_SKIP(src), &len);
  return len;
 }
 
