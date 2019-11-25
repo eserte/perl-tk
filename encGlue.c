@@ -14,6 +14,7 @@
 #endif
 
 #define NEED_utf8_to_uvchr_buf
+#define NEED_my_strnlen
 #include "ppport.h"
 
 #define U8 U8
