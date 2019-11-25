@@ -296,13 +296,17 @@ Tcl_UtfToUpper(char * src)
 Tcl_UniChar
 Tcl_UniCharToUpper(int ch)
 {
- return toupper(ch);
+         /* Only the ASCII characters and those in E0..FE have upper case
+          * values that are still in range */
+ return ((isLOWER_L1(ch) && (isASCII(ch) || (ch >= 0xE0 && ch <= 0xFE)))
+         ? ch - 0x20
+         : ch);
 }
 
 Tcl_UniChar
 Tcl_UniCharToLower(int ch)
 {
- return tolower(ch);
+ return ((! isUPPER_L1(ch)) ? ch : ch + 0x20)
 }
 
 int
@@ -332,7 +336,7 @@ Tcl_UtfToLower (char * src)
  int n = 0;
  while (*s)
   {
-   *s = tolower(UCHAR(*s));
+   *s = Tcl_UniCharToLower(UCHAR(*s));
    s++;
   }
  *s = '\0';
@@ -346,7 +350,7 @@ Tcl_UtfToUpper(char * src)
  int n = 0;
  while (*s)
   {
-   *s = toupper(UCHAR(*s));
+   *s = Tcl_UniCharToUpper(UCHAR(*s));
    s++;
   }
  *s = '\0';
