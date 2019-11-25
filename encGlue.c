@@ -58,7 +58,7 @@ Tcl_UniCharToUpper(int ch)
  dTHX;
  U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
  STRLEN len;
- return Perl_to_uni_upper(aTHX_ ch, tmpbuf, &len);
+ return toUPPER_uvchr(ch, tmpbuf, &len);
 }
 
 Tcl_UniChar
@@ -67,35 +67,35 @@ Tcl_UniCharToLower(int ch)
  dTHX;
  U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
  STRLEN len;
- return Perl_to_uni_lower(aTHX_ ch, tmpbuf, &len);
+ return toLOWER_uvchr(ch, tmpbuf, &len);
 }
 
 int
 Tcl_UniCharIsAlpha(int ch)
 {
  dTHX;
- return Perl_is_uni_alpha(aTHX_ ch);
+ return isALPHA_uvchr(ch);
 }
 
 int
 Tcl_UniCharIsWordChar(int ch)
 {
  dTHX;
- return Perl_is_uni_alnum(aTHX_ ch);
+ return isWORDCHAR_uvchr(ch);
 }
 
 int
 Tcl_UniCharIsSpace(int ch)
 {
  dTHX;
- return Perl_is_uni_space(aTHX_ ch);
+ return isSPACE_uvchr(ch);
 }
 
 int
 Tcl_UniCharIsUpper(int ch)
 {
  dTHX;
- return Perl_is_uni_upper(aTHX_ ch);
+ return isUPPER_uvchr(ch);
 }
 
 int
@@ -308,13 +308,13 @@ Tcl_UniCharToLower(int ch)
 int
 Tcl_UniCharIsAlpha(int ch)
 {
- return isalpha(ch);
+ return isALPHA_L1(ch);
 }
 
 int
 Tcl_UniCharIsUpper(int ch)
 {
- return isupper(ch);
+ return isUPPER_L1(ch);
 }
 
 int
