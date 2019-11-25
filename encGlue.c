@@ -33,10 +33,6 @@
 #define utf8_to_uv utf8_to_uvchr
 #endif
 
-#ifndef UTF8_MAXBYTES_CASE
-#define UTF8_MAXBYTES_CASE UTF8_MAXLEN_UCLC
-#endif
-
 /* Workaround for immediate crash with perl 5.19.9+ and without XFT
  * See https://rt.cpan.org/Ticket/Display.html?id=96543 and
  * https://rt.perl.org/Ticket/Display.html?id=120626
