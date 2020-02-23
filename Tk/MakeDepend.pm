@@ -11,7 +11,7 @@ $SIG{__DIE__} = \&Carp::confess;
 
 
 use vars qw($VERSION);
-$VERSION = '4.015';
+$VERSION = '4.016';
 
 sub scan_file;
 

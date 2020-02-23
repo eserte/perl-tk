@@ -13,7 +13,7 @@ package Tk::TextEdit;
 
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/TextEdit.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/TextEdit.pm#4 $
 
 use Tk qw (Ev);
 use AutoLoader;
