@@ -18,6 +18,8 @@ sub scan_file;
 sub do_include
 {
  my ($inc,$dep,@include) = @_;
+ return if $inc eq 'ppport.h';  # Gets confused and thinks this is a perl
+                                # file.  It won't add dependencies anyway.
  foreach my $dir (@include)
   {
    my $path = "$dir/$inc";

@@ -495,6 +495,16 @@ Tcl_CreateInterp  _((void))
 {
  dTHX;
  HV *hv = newHV();
+
+#ifdef switch_to_global_locale
+ /* X uses setlocale(), which is not thread safe, and is incompatible with the
+  * POSIX 2008 thread-safe locale handling functions that perl normally uses on
+  * threaded POSIX builds.  The function below does nothing except in
+  * situations where needed, it tells this thread to pay attention to
+  * setlocale().  As long as only one thread calls it, everything works. */
+ switch_to_global_locale();
+#endif
+
  SvREFCNT_dec(Blessed("Tk::Interp",newRV((SV *) hv)));
  return hv;
 }
@@ -841,6 +851,13 @@ Tk_Window tkwin;
   }
  sv_unmagic((SV *) hv, PERL_MAGIC_ext);
  Tcl_DeleteInterp(interp);
+
+#ifdef sync_locale
+ /* Restore normal locale handling (see the switch_to_global_locale call
+  * elsewhere in this file) */
+ sync_locale();
+#endif
+
 }
 
 static SV *

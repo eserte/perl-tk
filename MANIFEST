@@ -1140,6 +1140,7 @@ pod/X.pod
 pod/X11Font.pod
 pod/Xrm.pod
 PPM-HowTo
+ppport.h
 pTk/bitmaps/error.bmp
 pTk/bitmaps/gray12.bmp
 pTk/bitmaps/gray25.bmp
