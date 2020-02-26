@@ -173,8 +173,8 @@ sub menus {
         -font => 'Helvetica 10', -textvariable => \$status_bar)->
 	pack(qw/-padx 2 -pady 2 -expand yes -fill both/);
     $menubar->bind('<<MenuSelect>>' => sub {
-	$status_bar = undef;
-	$status_bar = $_[0]->entrycget('active', -label);
+	my $entry = shift;
+	$status_bar = $entry->entrycget('active', -label) || '';
 	$TOP->idletasks;
     });
 
