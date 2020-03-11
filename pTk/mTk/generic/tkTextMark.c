@@ -754,7 +754,7 @@ MarkFindPrev(interp, textPtr, string)
     while (1) {
 	/*
 	 * segPtr points just past the first possible candidate,
-	 * or at the begining of the line.
+	 * or at the beginning of the line.
 	 */
 	for (prevPtr = NULL, seg2Ptr = index.linePtr->segPtr;
 		seg2Ptr != NULL && seg2Ptr != segPtr;
