@@ -1,3 +1,11 @@
+Tk-804.034_501 release (2020-03-19)
+----------------------
+
+Fixes
+ Add dummy rules for newer EUMM (RT #124910)
+
+ Try harder to find libpng on FreeBSD
+
 Tk-804.034_500 release (2020-02-23)
 ----------------------
 
