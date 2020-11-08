@@ -20,9 +20,9 @@ my $stderr_too = ($^O eq 'MSWin32') ? '' : '2>&1';
 sub try_compile
 {
  my ($file,$inc,$lib,$def)  = @_;
- $inc = [] unless $inc;
- $lib = [] unless $lib;
- $def = [] unless $def;
+ $inc ||= [];
+ $lib ||= [];
+ $def ||= [];
  my $stderr_too = $VERBOSE ? '' : $stderr_too;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compiling $file\n";
@@ -36,9 +36,9 @@ sub try_compile
 sub try_run
 {
  my ($file,$inc,$lib,$def)  = @_;
- $inc = [] unless $inc;
- $lib = [] unless $lib;
- $def = [] unless $def;
+ $inc ||= [];
+ $lib ||= [];
+ $def ||= [];
  my $stderr_too = $VERBOSE ? '' : $stderr_too;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compile/Run $file\n";
