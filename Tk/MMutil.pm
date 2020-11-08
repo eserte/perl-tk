@@ -7,6 +7,7 @@ use Cwd;
 use Config;
 use Carp;
 use File::Basename;
+use File::Spec::Functions qw(abs2rel);
 
 use vars qw($VERSION);
 $VERSION = '4.026';
@@ -401,8 +402,8 @@ sub makefile
 {
  my $self = shift;
  my $str  = $self->MM::makefile;
- my $mm = findINC('Tk/MMutil.pm');
- my $cf = findINC('Tk/Config.pm');
+ my $mm = abs2rel findINC('Tk/MMutil.pm');
+ my $cf = abs2rel findINC('Tk/Config.pm');
  $str =~ s/(\$\(CONFIGDEP\))/$1 $cf $mm/;
  $str =~ s/\$\(OBJECT\)\s*:.*\n//;
  return $str;
