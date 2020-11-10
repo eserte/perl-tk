@@ -15,7 +15,7 @@ $numFormats++ unless $@;
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
 
-plan tests => (2*(7 * $numFormats) + 2 + 2 + 1 + 2);
+plan tests => (2*(7 * $numFormats) + 2 + 2 + 1 + 2 + 2 + 2 + 2);
 
 my @files = ();
 
@@ -126,6 +126,64 @@ $col++;
     eval { $mw->Photo(-file => $tmpfile, -format => 'gif') };
     like $@, qr{\Q$tmpfile\E}, 'File name appears in error message';
     like $@, qr{\Qhas dimension(s) <= 0}, 'No dimensions error message';
+}
+
+{
+    # Test case for RT #128103
+    my $image = eval { $mw->Photo(-data => <<'EOF') };
+/* XPM */
+static char *noname[] = {
+/* width height ncolors chars_per_pixel */
+"80 1 4 1",
+/* colors */
+"  c #000000",
+". c #914800",
+"/ c #482455",
+"* c #6D4800",
+/* pixels */
+"innyymtytnnt>qqqqqq=qcickkk,rwq,qrr,rir,rq>qrrrrjrxiriitq=@/*/@o^#=r,rtifqq@#@#="
+};
+EOF
+    is $@, '', 'No error';
+    ok $image, "'/*' in XPM data caused no problem";
+}
+
+{
+    # Similar test case for RT #128103 (comment marker in colors section)
+    my $image = eval { $mw->Photo(-data => <<'EOF') };
+/* XPM */
+static char *noname[] = {
+/* width height ncolors chars_per_pixel */
+"80 1 4 1",
+/* colors */
+"  c #000000",
+". c #914800",
+"/ c #482455", /* weird color */
+"* c #6D4800",
+/* pixels */
+"................................................................................"
+};
+EOF
+    is $@, '', 'No error';
+    ok $image, "'/*' in XPM data caused no problem";
+}
+
+{
+    # Error case: short read
+    my $image = eval { $mw->Photo(-data => <<'EOF') };
+/* XPM */
+static char *noname[] = {
+/* width height ncolors chars_per_pixel */
+"2 2 2 1",
+/* colors */
+"  c #000000",
+". c #914800",
+/* pixels */
+".."
+};
+EOF
+    like $@, qr{^\QXPM image file is truncated; still 1 line(s) need to be read}, 'Expected error message about truncation';
+    ok !$image, "Truncated image was not created";
 }
 
 $mw->after(2500,[destroy => $mw]);

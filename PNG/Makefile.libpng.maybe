@@ -101,6 +101,9 @@ clean:
 # Empty rule needed since ExtUtils::MakeMaker 6.36 (ca.)
 test:
 
+# Empty rule needed since ExtUtils::MakeMaker 7.18 (see https://rt.cpan.org/Ticket/Display.html?id=117800)
+test_dynamic:
+
 EOF
      return 1;
     }

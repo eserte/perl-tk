@@ -76,7 +76,7 @@ common to all Widgets.
 
 A widget is represented to perl as a blessed reference to a hash. There are some
 members of the hash which are private to Tk and its tkGlue code.  Keys
-starting with B<'.'> and of the form  B</_[A-Z][A-Za-z_]+_/>
+starting with B<'.'> and of the form  B</^_[A-Z][A-Za-z_]+_$/>
 (i.e. starting and ending in _ and with  first char after _ being upper case) should be
 considered reserved to B<Tk>.
 

@@ -31,7 +31,26 @@ my $all_libs;
   {
    warn "'pkg-config libpng' failed, continue with fallback values for cflags and libs...\n";
    $libpng_cflags = '-I/usr/local/include';
-   $libpng_libs   = '-lpng -lm';
+   if ($^O eq 'freebsd')
+    {
+     my $real_libpng = readlink '/usr/local/lib/libpng.so';
+     if (defined $real_libpng)
+      {
+       $real_libpng =~ s{^lib}{};
+       $real_libpng =~ s{\.so$}{};
+       $libpng_libs = "-l$real_libpng";
+       warn "detected $libpng_libs on this system\n";
+      }
+     else
+      {
+       warn "No /usr/local/lib/libpng.so found, continue with default values (will probably fail)";
+       $libpng_libs = '-lpng -lm';
+      }
+    }
+   else
+    {
+     $libpng_libs   = '-lpng -lm';
+    }
   }
 
  my $zlib_cflags;

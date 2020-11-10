@@ -11,7 +11,7 @@ sub ctext {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     => ['This window displays a string of text to demonstrate the text facilities of canvas widgets.  You can click in the boxes to adijust the position of the text relative to its positioning point or change its justification.  The text also supports the following simple bindings for editing:
+        -text     => ['This window displays a string of text to demonstrate the text facilities of canvas widgets.  You can click in the boxes to adjust the position of the text relative to its positioning point or change its justification.  The text also supports the following simple bindings for editing:
   1. You can point, click, and type.
   2. You can also select with button 1.
   3. You can copy the selection to the mouse position with button 2.
@@ -32,7 +32,7 @@ sub ctext {
 
     $c->addtag(qw/text withtag/,
         $c->create('text', 250, 200,
-            -text      => 'This is just a string of text to demonstrate the text facilities of canvas widgets. Bindings have been been defined to support editing (see above)."',
+            -text      => 'This is just a string of text to demonstrate the text facilities of canvas widgets. Bindings have been defined to support editing (see above)."',
             qw/-width 440 -anchor n -justify  left
 	       -font -*-Helvetica-Medium-R-Normal--*-240-*-*-*-*-*-*/
         ),

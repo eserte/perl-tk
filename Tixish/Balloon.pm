@@ -4,7 +4,7 @@
 #
 # This is a patched version of Balloon 3.037 - it adds support
 # for different orientations of the balloon widget, depending
-# on wether there's enough space for it. The little arrow now
+# on whether there's enough space for it. The little arrow now
 # should always point directly to the client.
 # Added by Gerhard Petrowitsch (gerhard.petrowitsch@philips.com)
 #
@@ -15,7 +15,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '4.012'; # was: sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.013'; # was: sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -279,7 +279,7 @@ sub grabBad {
     # condition in SwitchToClient altogether?
     return 0 if $w->isa(__PACKAGE__);
 
-    # The grab is OK if $client is a decendant of $g. Use the internal Tcl/Tk
+    # The grab is OK if $client is a descendant of $g. Use the internal Tcl/Tk
     # pathname (yes, it's cheating, but it's legal).
 
     return 0 if $g == $w->MainWindow;
@@ -383,7 +383,7 @@ sub Popup {
     # Explanation of following code. [JD]
     # PREMISE: We want to ensure that the balloon is always "on screen".
     # To do this we use calculate the size of the
-    # toplevel before it is mapped. Then we adjust it's position with respect to the
+    # toplevel before it is mapped. Then we adjust its position with respect to the
     # mouse cursor or widget. Balloons are usually shown below and to the right of the target.
     # From extensive KDE experience using Xinerama, and from using dual monitors on WinXP..
     # the balloon will extend across two monitors in single logical screen mode (SLS).

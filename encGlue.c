@@ -13,6 +13,10 @@
 #include <langinfo.h>
 #endif
 
+#define NEED_utf8_to_uvchr_buf
+#define NEED_my_strnlen
+#include "ppport.h"
+
 #define U8 U8
 #include "tkGlue.def"
 
@@ -24,16 +28,8 @@
 #include "pTk/tkWinInt.h"
 #endif
 
-
 #ifdef SvUTF8
 
-#ifndef utf8_to_uv
-#define utf8_to_uv utf8_to_uvchr
-#endif
-
-#ifndef UTF8_MAXBYTES_CASE
-#define UTF8_MAXBYTES_CASE UTF8_MAXLEN_UCLC
-#endif
 
 /* Workaround for immediate crash with perl 5.19.9+ and without XFT
  * See https://rt.cpan.org/Ticket/Display.html?id=96543 and
@@ -63,7 +59,7 @@ Tcl_UniCharToUpper(int ch)
  dTHX;
  U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
  STRLEN len;
- return Perl_to_uni_upper(aTHX_ ch, tmpbuf, &len);
+ return toUPPER_uvchr(ch, tmpbuf, &len);
 }
 
 Tcl_UniChar
@@ -72,35 +68,35 @@ Tcl_UniCharToLower(int ch)
  dTHX;
  U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
  STRLEN len;
- return Perl_to_uni_lower(aTHX_ ch, tmpbuf, &len);
+ return toLOWER_uvchr(ch, tmpbuf, &len);
 }
 
 int
 Tcl_UniCharIsAlpha(int ch)
 {
  dTHX;
- return Perl_is_uni_alpha(aTHX_ ch);
+ return isALPHA_uvchr(ch);
 }
 
 int
 Tcl_UniCharIsWordChar(int ch)
 {
  dTHX;
- return Perl_is_uni_alnum(aTHX_ ch);
+ return isWORDCHAR_uvchr(ch);
 }
 
 int
 Tcl_UniCharIsSpace(int ch)
 {
  dTHX;
- return Perl_is_uni_space(aTHX_ ch);
+ return isSPACE_uvchr(ch);
 }
 
 int
 Tcl_UniCharIsUpper(int ch)
 {
  dTHX;
- return Perl_is_uni_upper(aTHX_ ch);
+ return isUPPER_uvchr(ch);
 }
 
 int
@@ -152,13 +148,8 @@ int
 Tcl_UtfToUniChar (CONST char * src,Tcl_UniChar * chPtr)
 {
  dTHX;
-#if defined(utf8_to_uvchr)
  STRLEN len;
- *chPtr = utf8_to_uv((U8 *)src,&len);
-#else
- I32 len;
- *chPtr = utf8_to_uv((U8 *)src,&len);
-#endif
+ *chPtr = utf8_to_uvchr_buf((U8 *)src, src + UTF8_CHK_SKIP(src), &len);
  return len;
 }
 
@@ -273,7 +264,7 @@ Tcl_UtfToLower (char * src)
  while (*s)
   {
    STRLEN len;
-   Perl_to_utf8_lower(aTHX_ s, d, &len );
+   toLOWER_utf8_safe(s, s + UTF8_CHK_SKIP(s), d, &len );
    d += len;
    s += len;
   }
@@ -290,7 +281,7 @@ Tcl_UtfToUpper(char * src)
  while (*s)
   {
    STRLEN len;
-   Perl_to_utf8_upper(aTHX_ s, d, &len );
+   toUPPER_utf8_safe(s, s + UTF8_CHK_SKIP(s), d, &len );
    d += len;
    s += len;
   }
@@ -306,25 +297,29 @@ Tcl_UtfToUpper(char * src)
 Tcl_UniChar
 Tcl_UniCharToUpper(int ch)
 {
- return toupper(ch);
+         /* Only the ASCII characters and those in E0..FE have upper case
+          * values that are still in range */
+ return ((isLOWER_L1(ch) && (isASCII(ch) || (ch >= 0xE0 && ch <= 0xFE)))
+         ? ch - 0x20
+         : ch);
 }
 
 Tcl_UniChar
 Tcl_UniCharToLower(int ch)
 {
- return tolower(ch);
+ return ((! isUPPER_L1(ch)) ? ch : ch + 0x20)
 }
 
 int
 Tcl_UniCharIsAlpha(int ch)
 {
- return isalpha(ch);
+ return isALPHA_L1(ch);
 }
 
 int
 Tcl_UniCharIsUpper(int ch)
 {
- return isupper(ch);
+ return isUPPER_L1(ch);
 }
 
 int
@@ -342,7 +337,7 @@ Tcl_UtfToLower (char * src)
  int n = 0;
  while (*s)
   {
-   *s = tolower(UCHAR(*s));
+   *s = Tcl_UniCharToLower(UCHAR(*s));
    s++;
   }
  *s = '\0';
@@ -356,7 +351,7 @@ Tcl_UtfToUpper(char * src)
  int n = 0;
  while (*s)
   {
-   *s = toupper(UCHAR(*s));
+   *s = Tcl_UniCharToUpper(UCHAR(*s));
    s++;
   }
  *s = '\0';

@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '4.036'; # was: sprintf '4.%03d', q$Revision: #30 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.037'; # was: sprintf '4.%03d', q$Revision: #30 $ =~ /\D(\d+)\s*$/;
 
 require Tk;
 use AutoLoader;
@@ -829,7 +829,7 @@ sub RecolorTree
 #
 # Arguments:
 # color - Name of starting color.
-# perecent - Integer telling how much to brighten or darken as a
+# percent - Integer telling how much to brighten or darken as a
 # percent: 50 means darken by 50%, 110 means brighten
 # by 10%.
 sub Darken
@@ -1065,7 +1065,6 @@ sub XMouseWheelBind
 {
  my ($mw,$class) = @_;
  # <4> and <5> are how mousewheel looks on X
- # <4> and <5> are how mousewheel looks on X
  $mw->bind($class,'<Shift-4>',      ['xview','scroll',-1,'units']);
  $mw->bind($class,'<Shift-5>',      ['xview','scroll',1,'units']);
  $mw->bind($class,'<Button-6>',     ['xview','scroll',-1,'units']);
@@ -1108,7 +1107,7 @@ sub MouseWheelBind
  $mw->Tk::bind($class, '<MouseWheel>',
 	       [ sub { $_[0]->yview('scroll',-($_[1]/120)*3,'units') }, Tk::Ev("D")]);
 
- if ($Tk::platform eq 'unix')
+ if ($mw->windowingsystem eq 'x11')
   {
    # Support for mousewheels on Linux/Unix commonly comes through mapping
    # the wheel to the extended buttons.  If you have a mousewheel, find

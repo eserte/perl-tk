@@ -13,7 +13,7 @@ package Tk::TextEdit;
 
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/TextEdit.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/TextEdit.pm#4 $
 
 use Tk qw (Ev);
 use AutoLoader;
@@ -272,7 +272,7 @@ sub IndicesLookGood
  return 1 if ($start_line == $end_line);
 
  ##########################
- # if not on same line and its a singleline, its bad
+ # if not on same line and it's a singleline, it's bad
  ##########################
  return 0 if $singleline;
 
@@ -295,7 +295,7 @@ sub IndicesLookGood
  ##########################
  return 1 if ($start_column == $end_column);
 
- # otherwise its bad
+ # otherwise it's bad
  return 0;
 }
 

@@ -17,3 +17,6 @@ build_script:
   - perl Makefile.PL
   - set HARNESS_TIMER=1
   - gmake test
+
+init:
+  - ps: IF ($env:APPVEYOR_REPO_BRANCH -eq "XXX-appveyor-nocache") {$env:APPVEYOR_CACHE_SKIP_RESTORE = "true"; $env:APPVEYOR_CACHE_SKIP_SAVE = "true"}

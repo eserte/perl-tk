@@ -228,7 +228,7 @@ sub init {
 
 sub lsearch {                   # $o = lsearch $regexp, @list;
 
-    # Search the list using the supplied regular expression and return it's
+    # Search the list using the supplied regular expression and return its
     # ordinal, or -1 if not found.
 
     my($regexp, @list) = @_;

@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Menu/Item.pm#4 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Menu/Item.pm#4 $
 
 sub PreInit
 {
@@ -132,7 +132,7 @@ sub menu
    require Tk::Menu;
    $w->ColorOptions(\%args);
    my $name = $self->cget('-label');
-   warn "Had to (re-)reate menu for $name";
+   warn "Had to (re-)create menu for $name";
    $menu = $w->Menu(Name => $name, %args);
    $self->configure('-menu'=>$menu);
   }

@@ -19,7 +19,7 @@ my $mw = Tk::MainWindow->new;
 
 ##
 ## if there's only one (fixed) or no font family
-## then something is wrong. Propably the envirionment
+## then something is wrong. Probably the environment
 ## and not perl/Tks fault.
 ##
 {
@@ -45,7 +45,7 @@ my $mw = Tk::MainWindow->new;
 
 ##
 ## if there's only one (fixed) or no font family
-## then something is wrong. Propably the envirionment
+## then something is wrong. Probably the environment
 ## and not perl/Tks fault.
 ##
 {
