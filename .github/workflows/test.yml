@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - '*travis*'
+      - '*appveyor*'
+      - '*doozer*'
+
+jobs:
+  test:
+    name: ${{ matrix.os }} + ${{ matrix.window_manager }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os:             'ubuntu-20.04'
+            window_manager: 'kwin'
+            with_test_pod:  'yes'
+            use_xft:        'yes'
+            libpng:         'libpng-dev'
+            libz:           'libz-dev'
+            libjpeg:        'libjpeg-dev'
+          ## XXX check later
+          #- os:             'ubuntu-20.04'
+          #  window_manager: 'sawfish'
+          #  with_test_pod:  'no'
+          #  use_xft:        'no'
+          #  libpng:         ''
+          #  libz:           ''
+          #  libjpeg:        ''
+          - os:             'ubuntu-18.04'
+            window_manager: 'fvwm'
+            with_test_pod:  'yes'
+            use_xft:        'yes'
+            libpng:         'libpng-dev'
+            libz:           'libz-dev'
+            libjpeg:        'libjpeg-dev'
+          - os:             'ubuntu-16.04'
+            window_manager: 'twm'
+            with_test_pod:  'no'
+            use_xft:        'no'
+            libpng:         ''
+            libz:           ''
+            libjpeg:        ''
+
+    steps:
+    - name: apt hacks
+      # removing non-needed apt repositories may speed up "apt-get update"
+      # also, 3rd party repositories might be unreliable
+      run: |
+        sudo rm -f /etc/apt/sources.list.d/*.list
+        sudo apt-get update -qq
+      if: "startsWith(matrix.os, 'ubuntu-')"
+    - uses: actions/checkout@v2
+    - name: Preinstall
+      env:
+        WINDOW_MANAGER: ${{ matrix.window_manager }}
+        WITH_TEST_POD:  ${{ matrix.with_test_pod }}
+        USE_XFT:        ${{ matrix.use_xft }}
+        LIBPNG:         ${{ matrix.libpng }}
+        LIBZ:           ${{ matrix.libz }}
+        LIBJPEG:        ${{ matrix.libjpeg }}
+      run: |
+        set -e
+        sudo apt-get install -qq xvfb libx11-dev $([ "$USE_XFT" = "no" ] || echo -n "libfreetype6-dev libxft-dev") $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kwin-x11" || echo -n $WINDOW_MANAGER)
+        [ "$WITH_TEST_POD" = "yes" ] && cpanm --quiet --notest Test::Pod || true
+        Xvfb :123 &
+        export DISPLAY=:123
+        (sleep 10; $WINDOW_MANAGER) &
+    - name: Configure
+      run: |
+        perl Makefile.PL
+    - name: Build
+      run: |
+        make -j8
+    - name: Test
+      env:
+        HARNESS_TIMER:   1
+        HARNESS_OPTIONS: j8
+      run: |
+        make test
+      if: "!startsWith(matrix.os,'windows-')"
