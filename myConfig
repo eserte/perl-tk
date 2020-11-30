@@ -66,6 +66,7 @@ $macro[1]->{WINARCH} = $win_arch;
 #
 
 $define{'USE_PROTOTYPE'} = 1     if ($Config{'prototype'});
+$define{'HAVE_INTTYPES_H'} = 1   if ($Config{'i_inttypes'});
 $define{'HAVE_UNISTD_H'} = 1     if ($Config{'i_unistd'});
 $define{'HAVE_SYS_SELECT_H'} = 1 if ($Config{'i_sysselct'});
 $define{'NO_STDLIB_H'} = 1       unless ($Config{'i_stdlib'});
