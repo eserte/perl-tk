@@ -19,7 +19,7 @@ sub mega {
     $t->pack( qw/ -fill both -expand 1 / );
     $t->insert( 'end', <<'end-of-instructions' );
 
-Here, briefly, is the Perl/Tk mega-widget implementation for pure Perl mega-widgets. As much of the work as possible has been abstracted and incorporated into the pTk core. This mimimizes the code the mega-widget author has to write, increasing consistency.
+Here, briefly, is the Perl/Tk mega-widget implementation for pure Perl mega-widgets. As much of the work as possible has been abstracted and incorporated into the pTk core. This minimizes the code the mega-widget author has to write, increasing consistency.
 
 There are two varieties of mega-widgets in Perl/Tk: composite and derived. A composite is Toplevel or Frame-based, having other, more elemental, widgets packed (or gridded) inside. A derived widget has a ISA-like relationship, generally adding (but sometimes subtracting) options/methods to/from a single, existing, widget. Of course, that single widget may itself be a composite widget.
 
@@ -29,7 +29,7 @@ To create a Perl/Tk mega-widget one:
 . defines a subroutine to initialize the class (optional)
 . defines an instance constructor (subroutine) that (optional):
     . builds the new widget
-    . defines options (configuration specifications, analagous to C widgets)
+    . defines options (configuration specifications, analogous to C widgets)
     . defines delegates for widget methods
 . defines private and instance methods (optional)
 
@@ -89,7 +89,7 @@ or
 
     # Don't forget POD documentation here!
 
-Here's an excerpt from a Text dervived mega-widget called TraceText; you can examine the complete code in another demonstration. This widget defines its content using a new -textvariable option.
+Here's an excerpt from a Text derived mega-widget called TraceText; you can examine the complete code in another demonstration. This widget defines its content using a new -textvariable option.
 
     package Tk::TraceText;
     use base qw/Tk::Derived Tk::Text/;
