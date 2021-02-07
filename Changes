@@ -1,3 +1,23 @@
+Tk-804.035_500 release (2021-02-07)
+----------------------
+
+Fixes
+ Compiles again with Strawberry Perl 5.32.x (RT #133260) (H.Merijn Brand)
+
+ Fix double free in validatecommand (RT #102648) (fvogel)
+
+ myConfig: add ability to define HAVE_INTTYPES_H (Christopher Chavez)
+
+ Smaller build improvements and typo corrections (Ed J., Christopher Chavez)
+
+ Prevent some compiler warnings (Christopher Chavez)
+
+Documentation
+ Several smaller Pod fixes (Christopher Chavez, asb-capfan)
+
+Tests
+ Introduce CI testing with github actions
+
 Tk-804.035 release (2020-03-28)
 ------------------
 
