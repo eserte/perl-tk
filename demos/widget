@@ -19,6 +19,17 @@ use strict;
 
 $XFT = $Tk::Config::xlib =~ /-lXft\b/;
 
+
+# Enable system DPI awareness for sharper UI on Windows
+# https://www.perlmonks.org/?node_id=11101747
+if ($^O eq 'MSWin32') {
+    require Win32::API;
+    # See https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setprocessdpiaware
+    my $SetProcessDPIAware = Win32::API::More->new('User32', 'BOOL SetProcessDPIAware()');
+    $SetProcessDPIAware->Call() or warn 'Failed to set process DPI awareness';
+}
+
+
 $MW = Tk::MainWindow->new;
 $MW->configure(-menu => my $menubar = $MW->Menu);
 
