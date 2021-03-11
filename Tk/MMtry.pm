@@ -11,11 +11,13 @@ $VERSION = '4.011';
 
 use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);
+use warnings;
 use strict;
 use File::Basename;
 use File::Spec;
 
-my $stderr_too = ($^O eq 'MSWin32') ? '' : '2>&1';
+my $CONSUME_STDERR  = ($^O eq 'MSWin32') ? '' : '2>&1';
+my $SUPPRESS_STDERR = ($^O eq 'MSWin32') ? '' : '2>/dev/null';
 
 sub try_compile
 {
@@ -23,12 +25,13 @@ sub try_compile
  $inc ||= [];
  $lib ||= [];
  $def ||= [];
- my $stderr_too = $VERBOSE ? '' : $stderr_too;
+ my $stderr_too = $VERBOSE ? $CONSUME_STDERR : $SUPPRESS_STDERR;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compiling $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def $stderr_too`;
+ my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def";
+ my $msgs  = `$cmdline $stderr_too`;
  my $ok = ($? == 0);
- warn "$msgs\n" if $VERBOSE && $msgs;
+ warn "$cmdline\n$msgs" if $VERBOSE;
  unlink($out) if (-f $out);
  return $ok;
 }
@@ -39,19 +42,19 @@ sub try_run
  $inc ||= [];
  $lib ||= [];
  $def ||= [];
- my $stderr_too = $VERBOSE ? '' : $stderr_too;
+ my $stderr_too = $VERBOSE ? $CONSUME_STDERR : $SUPPRESS_STDERR;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compile/Run $file\n";
  my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def";
  my $msgs  = `$cmdline $stderr_too`;
  my $ok = ($? == 0);
- warn "$cmdline:\n$msgs\n" if $VERBOSE && $msgs;
+ warn "$cmdline\n$msgs" if $VERBOSE;
  if ($ok)
   {
    my $path = File::Spec->rel2abs($out);
    $msgs = `$path $stderr_too`;
    $ok = ($? == 0);
-   warn "$path:$msgs\n" if $VERBOSE && $msgs;
+   warn "$path\n$msgs" if $VERBOSE;
   }
  unlink($out) if (-f $out);
  return $ok;
