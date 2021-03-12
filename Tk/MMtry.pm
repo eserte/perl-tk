@@ -21,35 +21,28 @@ my $SUPPRESS_STDERR = ($^O eq 'MSWin32') ? '' : '2>/dev/null';
 
 sub try_compile
 {
- my ($file,$inc,$lib,$def)  = @_;
- $inc ||= [];
- $lib ||= [];
- $def ||= [];
- my $stderr_too = $VERBOSE ? $CONSUME_STDERR : $SUPPRESS_STDERR;
- my $out   = basename($file,'.c').$Config{'exe_ext'};
- warn "Test Compiling $file\n";
- my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def";
- my $msgs  = `$cmdline $stderr_too`;
- my $ok = ($? == 0);
- warn "$cmdline\n$msgs" if $VERBOSE;
- unlink($out) if (-f $out);
- return $ok;
+ return _do_try(0, @_);
 }
 
 sub try_run
 {
- my ($file,$inc,$lib,$def)  = @_;
+ return _do_try(1, @_);
+}
+
+sub _do_try
+{
+ my ($do_run,$file,$inc,$lib,$def)  = @_;
  $inc ||= [];
  $lib ||= [];
  $def ||= [];
  my $stderr_too = $VERBOSE ? $CONSUME_STDERR : $SUPPRESS_STDERR;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
- warn "Test Compile/Run $file\n";
+ warn $do_run ? "Test Compile/Run $file\n" : "Test Compiling $file\n";
  my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def";
  my $msgs  = `$cmdline $stderr_too`;
  my $ok = ($? == 0);
  warn "$cmdline\n$msgs" if $VERBOSE;
- if ($ok)
+ if ($do_run and $ok)
   {
    my $path = File::Spec->rel2abs($out);
    $msgs = `$path $stderr_too`;
