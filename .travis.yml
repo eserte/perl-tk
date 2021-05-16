@@ -45,7 +45,7 @@ matrix:
   - env: WINDOW_MANAGER=fluxbox
 
 before_install:
- - '[ "`lsb_release -cs`" = "precise" ] && sudo rm -f /etc/apt/sources.list.d/mongodb.list || true'
+ - '[ "`lsb_release -cs`" = "precise" -o "`lsb_release -cs`" = "trusty" ] && (cd /etc/apt/sources.list.d && sudo rm -f mongodb.list google-chrome.list cassandra.list github_git-lfs.list couchdb.list pgdg.list) || true'
  - sudo apt-get update -qq
  - sudo apt-get install -qq xvfb libx11-dev $([ "$USE_XFT" = "no" ] || echo -n "libfreetype6-dev libxft-dev") $LIBPNG $LIBZ $LIBJPEG $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kwin-x11" || echo -n $WINDOW_MANAGER)
  - '[ "$USE_SYSTEM_PERL" = "1" ] && perlbrew off || true'
