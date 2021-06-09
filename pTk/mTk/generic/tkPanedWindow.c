@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkPanedWindow.c,v 1.13.2.4 2003/08/19 21:00:13 jenglish Exp $
+ * RCS: @(#) $Id: tkPanedWindow.c,v 1.13.2.7 2004/11/17 22:18:07 hobbs Exp $
  */
 
 #include "tkPort.h"
@@ -252,7 +252,7 @@ static Tk_OptionSpec optionSpecs[] = {
 	 TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_PIXELS, "-handlepad", "handlePad", "HandlePad",
 	 DEF_PANEDWINDOW_HANDLEPAD, -1, Tk_Offset(PanedWindow, handlePad),
-         0, 0},
+         0, 0, GEOMETRY},
     {TK_OPTION_PIXELS, "-handlesize", "handleSize", "HandleSize",
 	 DEF_PANEDWINDOW_HANDLESIZE, Tk_Offset(PanedWindow, handleSizePtr),
 	 Tk_Offset(PanedWindow, handleSize), 0, 0, GEOMETRY},
@@ -341,6 +341,7 @@ Tk_PanedWindowObjCmd(clientData, interp, objc, objv)
     PanedWindow *pwPtr;
     Tk_Window tkwin, parent;
     OptionTables *pwOpts;
+    XSetWindowAttributes atts;
 
     if (objc < 2) {
 	Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
@@ -429,11 +430,15 @@ Tk_PanedWindowObjCmd(clientData, interp, objc, objv)
      * panedwindow despite being children of windows with potentially
      * different characteristics, and it looks better that way too.
      * [Bug 702230]
+     * Also Set the X window save under attribute to avoid expose events as
+     * the proxy sash is dragged across the panes.  [Bug 1036963]
      */
     Tk_SetWindowVisual(pwPtr->proxywin,
 	    Tk_Visual(tkwin), Tk_Depth(tkwin), Tk_Colormap(tkwin));
     Tk_CreateEventHandler(pwPtr->proxywin, ExposureMask, ProxyWindowEventProc,
 	    (ClientData) pwPtr);
+    atts.save_under = True;
+    Tk_ChangeWindowAttributes(pwPtr->proxywin, CWSaveUnder, &atts);
 
     if (ConfigurePanedWindow(interp, pwPtr, objc - 2, objv + 2) != TCL_OK) {
 	Tk_DestroyWindow(pwPtr->proxywin);
@@ -1745,6 +1750,18 @@ Unlink(slavePtr)
 		masterPtr->slaves[j] = masterPtr->slaves[j + 1];
 	    }
 	    break;
+	}
+    }
+
+    /*
+     * Clean out any -after or -before references to this slave
+     */
+    for (i = 0; i < masterPtr->numSlaves; i++) {
+	if (masterPtr->slaves[i]->before == slavePtr->tkwin) {
+	    masterPtr->slaves[i]->before = None;
+	}
+	if (masterPtr->slaves[i]->after == slavePtr->tkwin) {
+	    masterPtr->slaves[i]->after = None;
 	}
     }
 
