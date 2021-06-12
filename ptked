@@ -6,7 +6,7 @@ use Cwd;
 use Getopt::Long;
 
 use vars qw($VERSION $portfile);
-$VERSION = '4.030'; # sprintf '4.%03d', q$Revision: #29 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.031'; # sprintf '4.%03d', q$Revision: #29 $ =~ /\D(\d+)\s*$/;
 
 my %opt;
 INIT
@@ -340,7 +340,7 @@ sub About
 $0 version $VERSION
 perl$]/Tk$Tk::VERSION
 
-Copyright © 1995-2004 Nick Ing-Simmons. All rights reserved.
+Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 END
