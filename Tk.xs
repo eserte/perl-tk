@@ -1019,14 +1019,17 @@ CODE:
 OUTPUT:
  RETVAL
 
-int
+void
 Tk_Grab(win,global)
 SV *	win
 int	global
 CODE:
  {
   Lang_CmdInfo *info = WindowCommand(win,NULL,3);
-  RETVAL = Tk_Grab(info->interp,info->tkwin,global);
+  if (Tk_Grab(info->interp,info->tkwin,global) != TCL_OK)
+   {
+    croak("%s",Tcl_GetStringResult(info->interp));
+   }
  }
 
 SV *
