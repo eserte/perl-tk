@@ -1,48 +1,87 @@
 language: perl
+arch:
+ - arm64
 matrix:
  include:
-  - perl: "5.14"
+  - dist: xenial
+    perl: 5.24
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm WITH_TEST_POD=no
-    dist: precise
-  - perl: "5.22"
+  - dist: bionic
+    perl: 5.26
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-    dist: xenial
-  - perl: "5.20"
+  - dist: focal
+    perl: 5.32
     env: WINDOW_MANAGER=twm
-    dist: trusty
-## t/fbox.t fails, not reproducible on a freebsd system
-#  - perl: "5.18"
-#    env: WINDOW_MANAGER=metacity LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-  - perl: "5.18"
+  - dist: xenial
+    perl: 5.24
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=xfwm4 LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-    dist: trusty
-  - perl: "5.16"
+  - dist: bionic
+    perl: 5.26
     env: WINDOW_MANAGER=fluxbox
-    dist: trusty
-  - perl: "5.12"
+  - dist: focal
+    perl: 5.32
     env: WINDOW_MANAGER=twm
-    dist: trusty
-  - perl: "5.10"
+  - dist: xenial
+    perl: 5.24
     env: WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-    dist: trusty
-  - perl: "5.8"
+  - dist: bionic
+    perl: 5.26
     env: WINDOW_MANAGER=twm USE_XFT=no
-    dist: trusty
-  - perl: "5.26"
+  - dist: focal
+    perl: 5.32
     env: WINDOW_MANAGER=sawfish LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
-    dist: xenial
-  - perl: "5.28"
+  - dist: xenial
+    perl: 5.24
     env: WINDOW_MANAGER=twm USE_XFT=no WITH_TEST_POD=yes
-    dist: xenial
-  - perl: "5.24-extras"
-    env: WINDOW_MANAGER=twm
-    dist: trusty
-  - perl: "5.30"
+  - dist: focal
+    perl: 5.32
     env: WINDOW_MANAGER=kwin
-    dist: xenial
-# XXX often failures in t/wm-tcl.t 261 or t/listbox.t 493
+
+#  - perl: "5.14"
+#    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm WITH_TEST_POD=no
+#    dist: precise
+#  - perl: "5.22"
+#    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+#    dist: xenial
+#  - perl: "5.20"
+#    env: WINDOW_MANAGER=twm
+#    dist: trusty
+### t/fbox.t fails, not reproducible on a freebsd system
+##  - perl: "5.18"
+##    env: WINDOW_MANAGER=metacity LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+#  - perl: "5.18"
+#    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=xfwm4 LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+#    dist: trusty
+#  - perl: "5.16"
+#    env: WINDOW_MANAGER=fluxbox
+#    dist: trusty
+#  - perl: "5.12"
+#    env: WINDOW_MANAGER=twm
+#    dist: trusty
+#  - perl: "5.10"
+#    env: WINDOW_MANAGER=fvwm LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+#    dist: trusty
+#  - perl: "5.8"
+#    env: WINDOW_MANAGER=twm USE_XFT=no
+#    dist: trusty
+#  - perl: "5.26"
+#    env: WINDOW_MANAGER=sawfish LIBPNG=libpng-dev LIBZ=libz-dev LIBJPEG=libjpeg-dev
+#    dist: xenial
+#  - perl: "5.28"
+#    env: WINDOW_MANAGER=twm USE_XFT=no WITH_TEST_POD=yes
+#    dist: xenial
+#  - perl: "5.24-extras"
+#    env: WINDOW_MANAGER=twm
+#    dist: trusty
+#  - perl: "5.30"
+#    env: WINDOW_MANAGER=kwin
+#    dist: xenial
+
  allow_failures:
+  # XXX often failures in t/wm-tcl.t 261 or t/listbox.t 493
   - env: WINDOW_MANAGER=fluxbox
+  # XXX currently one test in canvas.t always fails
+  - env: WINDOW_MANAGER=kwin
 
 before_install:
  - '[ "`lsb_release -cs`" = "precise" -o "`lsb_release -cs`" = "trusty" ] && (cd /etc/apt/sources.list.d && sudo rm -f mongodb.list google-chrome.list cassandra.list github_git-lfs.list couchdb.list pgdg.list) || true'
