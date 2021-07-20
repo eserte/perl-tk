@@ -82,3 +82,30 @@ jobs:
       run: |
         make test
       if: "!startsWith(matrix.os,'windows-')"
+
+  test_in_container:
+    name: Test with perl ${{ matrix.perlimage }}
+    runs-on: ubuntu-latest
+    container: perl:${{ matrix.perlimage }}
+    strategy:
+      matrix:
+        include:
+          - perlimage: 5.8.9-threaded-stretch
+          - perlimage: 5.10.1-buster
+          - perlimage: 5.12.5-stretch
+          - perlimage: 5.14.4-stretch
+          - perlimage: 5.16.3-buster
+          - perlimage: 5.18.4-buster
+          - perlimage: 5.22.4-stretch
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: "build and test"
+      run: |
+        apt-get update -qq && apt-get install -qq xvfb libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev twm
+        Xvfb :123 &
+        export DISPLAY=:123
+        (sleep 10; twm) &
+        perl Makefile.PL
+        make -j8
+        HARNESS_TIMER=1 HARNESS_OPTIONS=j8 make test
