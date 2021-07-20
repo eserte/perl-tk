@@ -1071,9 +1071,10 @@ $e->update;
 is($e->get, "ab");
 # On Unix/X11 and Windows it's 24, on cygwin/X11 with Xvfb running it's 25,
 # on Mac OS X with XFT=1 and a remote Xserver it's 23.
-# And depending on installed fonts, it can be even 22:
+# And depending on installed fonts, it can be even 22.
+# Also seen: 26 (github actions setup with various containers and Xvfb+twm or fvwm).
 cmp_ok($e->reqwidth, ">=", 22);
-cmp_ok($e->reqwidth, "<=", 25);
+cmp_ok($e->reqwidth, "<=", 26);
 
 $mw->traceVdelete(\$x); # XXX why?
 
