@@ -37,7 +37,7 @@ jobs:
             libpng:         'libpng-dev'
             libz:           'libz-dev'
             libjpeg:        'libjpeg-dev'
-          - os:             'ubuntu-16.04'
+          - os:             'ubuntu-18.04'
             window_manager: 'twm'
             with_test_pod:  'no'
             use_xft:        'no'
