@@ -15,8 +15,8 @@ your default path, so type I<widget> at a command prompt.
 
 Here are links to other novice tutorials:
 
-L<http://www.lehigh.edu/~sol0/ptk/tpj1.html>
-L<http://www.lehigh.edu/~sol0/ptk/perlmonth01/pm1.html>
+L<https://web.archive.org/web/20201031124241/https://www.lehigh.edu/~sol0/ptk/tpj1.html>
+L<https://web.archive.org/web/20201031142107/http://www.lehigh.edu/~sol0/ptk/perlmonth01/pm1.html>
 
 I<Mastering Perl/Tk> is the definitive book on Perl/Tk:
 
