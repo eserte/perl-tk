@@ -6,10 +6,10 @@ GCField("LineWidth",GCLineWidth,                          line_width,SvGCint)   
 GCField("LineStyle",GCLineStyle,                          line_style,SvGCint)           /* LineSolid, LineOnOffDash, LineDoubleDash */
 GCField("CapStyle",GCCapStyle,                            cap_style,SvGCint)            /* CapNotLast, CapButt, CapRound, CapProjecting */
 GCField("JoinStyle",GCJoinStyle,                          join_style,SvGCint)           /* JoinMiter, JoinRound, JoinBevel */
-GCField("FillStyle",GCFillStyle,                          fill_style,SvGCint)           /* FillSolid, FillTiled, FillStippled, FillOpaeueStippled */
+GCField("FillStyle",GCFillStyle,                          fill_style,SvGCint)           /* FillSolid, FillTiled, FillStippled, FillOpaqueStippled */
 GCField("FillRule",GCFillRule,                            fill_rule,SvGCint)            /* EvenOddRule, WindingRule */
 GCField("Tile",GCTile,                                    tile,SvGCPixmap)              /* tile pixmap for tiling operations */
-GCField("Stipple",GCStipple,                              stipple,SvGCPixmap)           /* stipple 1 plane pixmap for stipping */
+GCField("Stipple",GCStipple,                              stipple,SvGCPixmap)           /* stipple 1 plane pixmap for stippling */
 GCField("TileStipXOrigin",GCTileStipXOrigin,              ts_x_origin,SvGCint)          /* offset for tile or stipple operations */
 GCField("TileStipYOrigin",GCTileStipYOrigin,              ts_y_origin,SvGCint)
 GCField("Font",GCFont,                                    font,SvGCFont)                /* default text font for text operations */
