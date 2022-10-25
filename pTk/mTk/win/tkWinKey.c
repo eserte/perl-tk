@@ -217,7 +217,7 @@ KeycodeToKeysym(keycode, state, noascii)
     memset(keys, 0, 256);
     if (state & ShiftMask)
         keys[VK_SHIFT] = 0x80;
-    if (state & ControlMask)
+    if (state & ControlMask2)
 	keys[VK_CONTROL] = 0x80;
     if (state & Mod2Mask)
 	keys[VK_MENU] = 0x80;
@@ -395,8 +395,8 @@ TkpGetKeySym(dispPtr, eventPtr)
      * is no keysym defined, try without the modifiers.
      */
 
-    if ((sym == NoSymbol) && ((state & ControlMask) || (state & Mod2Mask))) {
-        state &=  ~(ControlMask | Mod2Mask);
+    if ((sym == NoSymbol) && ((state & ControlMask2) || (state & Mod2Mask))) {
+        state &=  ~(ControlMask2 | Mod2Mask);
         sym = KeycodeToKeysym(eventPtr->xkey.keycode, state, 0);
     }
     if ((sym == NoSymbol) && (state & ShiftMask)) {
@@ -578,7 +578,7 @@ TkpSetKeycodeAndState(tkwin, keySym, eventPtr)
             if (shift & 1)
                 eventPtr->xkey.state |= ShiftMask;
             if (shift & 2)
-                eventPtr->xkey.state |= ControlMask;
+                eventPtr->xkey.state |= ControlMask2;
             if (shift & 4)
                 eventPtr->xkey.state |= Mod2Mask;
             eventPtr->xkey.keycode = (KeyCode) (result & 0xff);

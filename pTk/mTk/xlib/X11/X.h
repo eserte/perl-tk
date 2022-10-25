@@ -179,7 +179,10 @@ are reserved in the protocol for errors and replies. */
 
 #define ShiftMask		(1<<0)
 #define LockMask		(1<<1)
-#define ControlMask		(1<<2)
+ /* Use ControlMask2 due to conflict with ControlMask defined in processthreadsapi.h
+	for Win32, see https://github.com/eserte/perl-tk/issues/87 for more information
+ */
+#define ControlMask2	(1<<2)
 #define Mod1Mask		(1<<3)
 #define Mod2Mask		(1<<4)
 #define Mod3Mask		(1<<5)
