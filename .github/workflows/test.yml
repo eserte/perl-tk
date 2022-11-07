@@ -53,7 +53,7 @@ jobs:
         sudo rm -f /etc/apt/sources.list.d/*.list
         sudo apt-get update -qq
       if: "startsWith(matrix.os, 'ubuntu-')"
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Preinstall
       env:
         WINDOW_MANAGER: ${{ matrix.window_manager }}
@@ -100,7 +100,7 @@ jobs:
           - perlimage: 5.36.0-bullseye
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: "build and test"
       run: |
         apt-get update -qq && apt-get install -qq xvfb libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev twm
