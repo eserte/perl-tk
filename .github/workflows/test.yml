@@ -85,27 +85,32 @@ jobs:
       if: "!startsWith(matrix.os,'windows-')"
 
   test_in_container:
-    name: Test with perl ${{ matrix.perlimage }}
+    name: Test with ${{ matrix.image }}
     runs-on: ubuntu-latest
-    container: perl:${{ matrix.perlimage }}
+    container: ${{ matrix.image }}
     strategy:
       matrix:
         include:
-          - perlimage: 5.8.9-threaded-stretch
-          - perlimage: 5.10.1-buster
-          - perlimage: 5.12.5-stretch
-          - perlimage: 5.14.4-stretch
-          - perlimage: 5.16.3-buster
-          - perlimage: 5.18.4-buster
-          - perlimage: 5.22.4-stretch
-          - perlimage: 5.36.0-bullseye
+          - image: perl:5.8.9-threaded-stretch
+          - image: perl:5.10.1-buster
+          - image: perl:5.12.5-stretch
+          - image: perl:5.14.4-stretch
+          - image: perl:5.16.3-buster
+          - image: perl:5.18.4-buster
+          - image: perl:5.22.4-stretch
+          - image: perl:5.36.0-bullseye
+          - image: debian:bookworm
 
     steps:
     - uses: actions/checkout@v3
-    - name: apt hacks
+    - name: get debian codename
       run: |
         set -e
         CODENAME=$(perl -nle '/^VERSION_CODENAME="?([^"]+)/ and $codename=$1; /^VERSION="\d+ \((.*)\)/ and $maybe_codename=$1; END { print $codename || $maybe_codename }' /etc/os-release)
+        echo "CODENAME=$CODENAME" >> $GITHUB_ENV
+    - name: apt hacks
+      run: |
+        set -e
         case "$CODENAME" in
           wheezy|jessie|stretch)
             echo "APT::Get::AllowUnauthenticated 1;" > /etc/apt/apt.conf.d/02allow-unsigned
@@ -113,9 +118,23 @@ jobs:
             echo "deb [check-valid-until=no] http://archive.debian.org/debian-security/ $CODENAME/updates main" >> /etc/apt/sources.list
             ;;
         esac
-    - name: "build and test"
+    - name: apt deps
       run: |
-        apt-get update -qq && apt-get install -qq xvfb libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev twm
+        apt-get update -qq && apt-get install -qqy xvfb libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev twm
+        case "$CODENAME" in
+          bookworm)
+            apt-get install -qqy perl
+            ;;
+        esac
+        case "${{ matrix.image }}" in
+          perl*)
+            ;;
+          *)
+            apt-get install -qqy gcc make
+            ;;
+        esac
+    - name: build and test
+      run: |
         Xvfb :123 &
         export DISPLAY=:123
         (sleep 10; twm) &
