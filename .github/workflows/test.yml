@@ -91,6 +91,7 @@ jobs:
     strategy:
       matrix:
         include:
+          ## Note: do not use "slim" images -> we need a C compiler
           - image: perl:5.8.9-threaded-stretch
           - image: perl:5.10.1-buster
           - image: perl:5.12.5-stretch
@@ -99,7 +100,9 @@ jobs:
           - image: perl:5.18.4-buster
           - image: perl:5.22.4-stretch
           - image: perl:5.36.0-bullseye
-          - image: debian:bookworm
+          - image: perl:5.38.0-bookworm
+          ## use debian:* images only if there's no suitable perl:* image
+          #- image: debian:bookworm
 
     steps:
     - uses: actions/checkout@v3
