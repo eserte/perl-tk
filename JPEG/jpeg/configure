@@ -1281,6 +1281,10 @@ else
 #line 1282 "configure"
 #include "confdefs.h"
 
+#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #ifdef HAVE_PROTOTYPES
 int is_char_signed (int arg)
 #else
@@ -1298,7 +1302,7 @@ int is_char_signed (arg)
   return 1;			/* assume char is signed otherwise */
 }
 char signed_char_check = (char) (-67);
-main() {
+int main() {
   exit(is_char_signed((int) signed_char_check));
 }
 EOF
@@ -1327,6 +1331,10 @@ else
 #line 1328 "configure"
 #include "confdefs.h"
 
+#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #ifdef HAVE_PROTOTYPES
 int is_shifting_signed (long arg)
 #else
@@ -1350,7 +1358,7 @@ int is_shifting_signed (arg)
   printf("I fear the JPEG software will not work at all.\n\n");
   return 0;			/* try it with unsigned anyway */
 }
-main() {
+int main() {
   exit(is_shifting_signed(-0x7F7E80B1L));
 }
 EOF
@@ -1380,7 +1388,10 @@ else
 #include "confdefs.h"
 
 #include <stdio.h>
-main() {
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+int main() {
   if (fopen("conftestdata", "wb") != NULL)
     exit(0);
   exit(1);
