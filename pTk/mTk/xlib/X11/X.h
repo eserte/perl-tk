@@ -43,7 +43,7 @@ SOFTWARE.
 #if defined(_WIN64) && defined(_MSC_VER)
 typedef __int64 XID;
 #else
-typedef unsigned long XID;
+typedef unsigned long long XID;
 #endif
 
 typedef XID Window;
