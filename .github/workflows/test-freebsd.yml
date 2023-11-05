@@ -1,0 +1,25 @@
+name: CI on FreeBSD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on FreeBSD
+    runs-on: macos-12
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        clean: false
+        show-progress: false
+    - uses: cross-platform-actions/action@v0.21.1
+      with:
+        operating_system: freebsd
+        version: '13.2'
+        run: |
+          sudo pkg update
+          sudo pkg install -y perl5 libX11 libXft png freetype2 fontconfig jpeg-turbo xorg-vfbserver
+          Xvfb :123 &
+          perl Makefile.PL
+          make
+          make test
