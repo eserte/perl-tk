@@ -6,12 +6,22 @@ branches:
 skip_tags: true
 shallow_clone: true
 
-cache:
-  - C:\strawberry
+environment:
+  matrix:
+    - perl: strawberryperl
+      strawberry_version: 5.32.1.1
+    - perl: strawberryperl
+      strawberry_version: latest
+matrix:
+  fast_finish: false
+  allow_failures:
+    - perl: strawberryperl
+      strawberry_version: latest
 
 install:
-  - if not exist "C:\strawberry" cinst strawberryperl
-  - set PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
+  - if %perl%==strawberryperl if     "%strawberry_version%"=="latest" cinst strawberryperl
+  - if %perl%==strawberryperl if not "%strawberry_version%"=="latest" cinst strawberryperl --version=%strawberry_version%
+  - if %perl%==strawberryperl set PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
   - cd C:\projects\%APPVEYOR_PROJECT_NAME%
   - cpanm --installdeps .
 
@@ -19,6 +29,3 @@ build_script:
   - perl Makefile.PL
   - set HARNESS_TIMER=1
   - gmake test
-
-init:
-  - ps: IF ($env:APPVEYOR_REPO_BRANCH -eq "XXX-appveyor-nocache") {$env:APPVEYOR_CACHE_SKIP_RESTORE = "true"; $env:APPVEYOR_CACHE_SKIP_SAVE = "true"}
