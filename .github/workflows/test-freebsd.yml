@@ -6,16 +6,16 @@ on:
 jobs:
   test:
     name: Test on FreeBSD
-    runs-on: macos-12
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
       with:
         clean: false
         show-progress: false
-    - uses: cross-platform-actions/action@v0.21.1
+    - uses: cross-platform-actions/action@v0.27.0
       with:
         operating_system: freebsd
-        version: '13.2'
+        version: '14.2'
         run: |
           sudo pkg update
           sudo pkg install -y perl5 libX11 libXft png freetype2 fontconfig jpeg-turbo xorg-vfbserver
