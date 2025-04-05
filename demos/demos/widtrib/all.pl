@@ -328,4 +328,13 @@ EOF
     # $TOP->WidgetDump;
 }
 
+return 1 if caller;
+
+require Tk::demos::widget_lib::WidgetDemo;
+$MW = MainWindow->new;
+$MW->Button(-text => 'Close', -command => sub { $MW->destroy })->pack;
+$DEMO_FILE = $0;
+all('All widgets');
+Tk::MainLoop();
+
 __END__
