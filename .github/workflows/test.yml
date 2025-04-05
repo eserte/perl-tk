@@ -102,6 +102,7 @@ jobs:
           - image: perl:5.36.0-bullseye
           - image: perl:5.38.0-bookworm
           - image: perl:5.40.0-bookworm
+          - image: perl:5.41.8-bookworm
           ## use debian:* images only if there's no suitable perl:* image
           #- image: debian:bookworm
 
