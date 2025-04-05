@@ -294,7 +294,7 @@ sub xyview {
 
 	my $gridded = $pan->{Configure}{'-gridded'} || '';
 	my $do_gridded = ($gridded eq 'both'
-				|| (!$horz == ($gridded ne 'x'))) ? 1 : 0;
+				|| ((!$horz) == ($gridded ne 'x'))) ? 1 : 0;
 
 	if($do_gridded && $mul eq 'pages') {
 	    my $ch = ($slv->children)[0];
