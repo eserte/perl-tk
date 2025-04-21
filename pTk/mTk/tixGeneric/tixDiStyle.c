@@ -197,7 +197,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 {
     Tix_DItemInfo * diTypePtr;
     Tk_Window tkwin = (Tk_Window)clientData;
-    char * styleName = NULL;
+    Tcl_Obj * styleName = NULL; /* note: in original Tix this was a char*, need to use a Tcl_Obj because of the shuffle hack later */
     Tix_DispData dispData;
     char buff[100];
     int i, n;
@@ -235,8 +235,8 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 		continue;
 	    }
 	    if (strncmp(argv[i], "-stylename", len) == 0) {
-		styleName = argv[i+1];
-		if (FindStyle(styleName, interp) != NULL) {
+		styleName = Tcl_NewStringObj(argv[i+1], -1);
+		if (FindStyle(Tcl_GetString(styleName), interp) != NULL) {
 		    Tcl_AppendResult(interp, "style \"", argv[i+1],
 			"\" already exist", NULL);
 		    return TCL_ERROR;
@@ -244,7 +244,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 		continue;
 	    }
 
-	    if (n!=i) {
+	    if (n!=i) { /* shuffle objv to remove -refwindow and -stylename */
 #if 0
 		objv[n]   = objv[i];
 		objv[n+1] = objv[i+1];
@@ -265,7 +265,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 	 * (ToDo: check if the name has already been used)
 	 */
 	sprintf(buff, "tixStyle%d", counter++);
-	styleName = buff;
+	styleName = Tcl_NewStringObj(buff, -1);
     }
 
     dispData.interp  = interp;
@@ -273,7 +273,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
     dispData.tkwin   = tkwin;
 
     if ((stylePtr = GetDItemStyle(&dispData, diTypePtr,
-	 styleName, NULL)) == NULL) {
+	Tcl_GetString(styleName), NULL)) == NULL) {
 	return TCL_ERROR;
     }
     if (StyleConfigure(interp, stylePtr, argc-2, argv+2, 0) != TCL_OK) {
@@ -284,7 +284,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 	    RefWindowStructureProc, (ClientData)stylePtr);
 
     Tcl_ResetResult(interp);
-    Tcl_SetObjResult(interp, LangObjectObj( interp, styleName));
+    Tcl_SetObjResult(interp, LangObjectObj(interp, Tcl_GetString(styleName)));
     return TCL_OK;
 }
 
