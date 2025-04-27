@@ -501,7 +501,7 @@ static int CommonReadPNG(png_ptr, format, imageHandle, destX, destY,
 	if (!png_get_gAMA(png_ptr, info_ptr, &gamma)) {
 	    gamma = 0.45455;
 	}
-	png_set_gamma(png_ptr, 2.2, gamma);
+	png_set_gamma(png_ptr, 1.0, gamma);
 #endif
 #if defined(PNG_sRGB_SUPPORTED)
     }
