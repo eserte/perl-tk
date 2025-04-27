@@ -94,24 +94,18 @@ the B<aspect> option determines the line length.
 
 =head1 DESCRIPTION
 
-The B<Message> method creates a new window (given by the
-$widget argument) and makes it into a message widget.
-Additional
-options, described above, may be specified on the command line
-or in the option database
-to configure aspects of the message such as its colors, font,
-text, and initial relief.  The B<message> command returns its
-$widget argument.  At the time this command is invoked,
-there must not exist a window named $widget, but
-$widget's parent must exist.
+The B<Message> method creates a new Message widget. 
+Additional options, described above, may be specified, 
+to configure aspects of the Message widget such as its colors, font,
+text, and initial relief.
 
-A message is a widget that displays a textual string.  A message
-widget has three special features.  First, it breaks up
+A message is a widget that displays a textual string (similar to a L<Tk::Label>).  A message
+widget has three special features. First, it breaks up
 its string into lines in order to produce a given aspect ratio
-for the window.  The line breaks are chosen at word boundaries
+for the window. The line breaks are chosen at word boundaries
 wherever possible (if not even a single word would fit on a
-line, then the word will be split across lines).  Newline characters
-in the string will force line breaks;  they can be used, for example,
+line, then the word will be split across lines). Newline characters
+in the string will force line breaks; they can be used, for example,
 to leave blank lines in the display.
 
 The second feature of a message widget is justification.  The text
