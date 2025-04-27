@@ -60,7 +60,7 @@ TkWinGetModifierState()
 	state |= ShiftMask;
     }
     if (GetKeyState(VK_CONTROL) & 0x8000) {
-	state |= ControlMask;
+	state |= ControlMask2;
     }
     if (GetKeyState(VK_MENU) & 0x8000) {
 	state |= ALT_MASK;

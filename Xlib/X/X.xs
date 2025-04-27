@@ -614,8 +614,8 @@ int arg;
 	    goto not_there;
 #endif
 	if (strEQ(name, "ControlMask"))
-#ifdef ControlMask
-	    return ControlMask;
+#ifdef ControlMask2
+	    return ControlMask2;
 #else
 	    goto not_there;
 #endif

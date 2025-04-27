@@ -421,7 +421,7 @@ typedef struct {
 #define MULT_CLICKS	7
 
 static ModInfo modArray[] = {
-    {"Control",		ControlMask,	0},
+    {"Control",		ControlMask2,	0},
     {"Shift",		ShiftMask,	0},
     {"Lock",		LockMask,	0},
     {"Meta",		META_MASK,	0},
