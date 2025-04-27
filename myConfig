@@ -78,7 +78,7 @@ if ($Config{'i_systime'})
     $define{'TIME_WITH_SYS_TIME'} = 1;
    }
  }
-$define{'HAVE_LIMITS_H'} = 1     if ($Config{'i_limits'});
+$define{'HAVE_LIMITS_H'} = 1     if ($Config{'i_limits'} or $] > 5.027);
 $define{'HAS_STDARG'} = 1        if ($Config{'i_stdarg'});
 $define{'USE_BCOPY'} = 1         if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
 
