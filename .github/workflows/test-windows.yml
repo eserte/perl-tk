@@ -1,0 +1,10 @@
+name: CI for Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  minimal-job:
+    runs-on: windows-latest
+    steps:
+      - run: echo "NYI"
