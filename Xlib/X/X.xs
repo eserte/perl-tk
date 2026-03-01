@@ -614,11 +614,7 @@ int arg;
 	    goto not_there;
 #endif
 	if (strEQ(name, "ControlMask"))
-#ifdef ControlMask
 	    return ControlMask;
-#else
-	    goto not_there;
-#endif
 	if (strEQ(name, "Convex"))
 #ifdef Convex
 	    return Convex;
@@ -1572,11 +1568,7 @@ int arg;
 	    goto not_there;
 #endif
 	if (strEQ(name, "None"))
-#ifdef None
 	    return None;
-#else
-	    goto not_there;
-#endif
 	if (strEQ(name, "NorthEastGravity"))
 #ifdef NorthEastGravity
 	    return NorthEastGravity;
