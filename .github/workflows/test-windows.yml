@@ -1,10 +1,56 @@
 name: CI for Windows
 
 on:
+  push:
+    branches-ignore:
+      - '*travis*'
+      - '*appveyor*'
+      - '*doozer*'
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  minimal-job:
+  test:
+    name: Windows + StrawberryPerl ${{ matrix.perl_version }}
     runs-on: windows-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - perl_version: '5.32.1.1'
+            allow_failure: false
+          - perl_version: 'latest'
+            allow_failure: true
+
     steps:
-      - run: echo "NYI"
+    - uses: actions/checkout@v4
+
+    - name: Install StrawberryPerl ${{ matrix.perl_version }}
+      run: |
+        if ("${{ matrix.perl_version }}" -eq "latest") {
+          choco install strawberryperl -y
+        } else {
+          choco install strawberryperl --version=${{ matrix.perl_version }} --allow-empty-checksums -y
+        }
+      shell: powershell
+
+    - name: Set PATH for StrawberryPerl
+      run: |
+        echo "C:\strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "C:\strawberry\perl\site\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "C:\strawberry\c\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      shell: powershell
+
+    - name: Configure
+      run: perl Makefile.PL
+
+    - name: Build
+      run: gmake
+
+    - name: Test
+      env:
+        HARNESS_TIMER: 1
+      run: gmake test
