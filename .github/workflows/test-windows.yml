@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - perl_version: '5.32.1.1'
+          - perl_version: '5.32'
             allow_failure: false
           - perl_version: 'latest'
             allow_failure: true
@@ -29,21 +29,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install StrawberryPerl ${{ matrix.perl_version }}
-      run: |
-        if ("${{ matrix.perl_version }}" -eq "latest") {
-          choco install strawberryperl -y
-        } else {
-          choco uninstall strawberryperl -y --remove-dependencies
-          choco install strawberryperl --version=${{ matrix.perl_version }} --allow-empty-checksums -y
-        }
-      shell: powershell
-
-    - name: Set PATH for StrawberryPerl
-      run: |
-        echo "C:\strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\strawberry\perl\site\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\strawberry\c\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      shell: powershell
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl_version }}
+        distribution: strawberry
 
     - name: Configure
       run: perl Makefile.PL
