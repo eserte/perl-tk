@@ -33,7 +33,7 @@ jobs:
         if ("${{ matrix.perl_version }}" -eq "latest") {
           choco install strawberryperl -y
         } else {
-          choco install strawberryperl --version=${{ matrix.perl_version }} --allow-empty-checksums -y
+          choco install strawberryperl --version=${{ matrix.perl_version }} --allow-empty-checksums --allow-downgrade -y
         }
       shell: powershell
 
