@@ -127,7 +127,7 @@ arrays and hashes.  When the watchpoint is created the parallel shadow
 variable is initialized with the watched variable's contents, and when
 the watchpoint is deleted the shadow variable is copied to the original
 variable.  Thus, changes made during the watch process are not lost.
-Shadowing is on my default.  If you disable shadowing any changes made
+Shadowing is on by default.  If you disable shadowing any changes made
 to an array or hash are lost when the watchpoint is deleted.
 
 Specify any of the following relevant callback parameters, in the
@@ -489,7 +489,7 @@ sub Pop       {pop @{$_[0]->{-ptr}}}
 sub Push      {push @{$_[0]->{-ptr}}, @_[1 .. $#_]}
 sub Shift     {shift @{$_[0]->{-ptr}}}
 sub Splice    {
-    my $n = scalar @_;		# splice() is wierd!
+    my $n = scalar @_;		# splice() is weird!
     return splice @{$_[0]->{-ptr}}, $_[1]                      if $n == 2;
     return splice @{$_[0]->{-ptr}}, $_[1], $_[2]               if $n == 3;
     return splice @{$_[0]->{-ptr}}, $_[1], $_[2], @_[3 .. $#_] if $n >= 4;
