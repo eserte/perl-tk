@@ -339,14 +339,14 @@ sub ConfigDefault
    Tk::catch { $cw->Tk::cget('-background') };
    my (@bg) = $@ ? ('PASSIVE') : ('SELF');
    push(@bg,'CHILDREN') if $child;
-   $specs->{'-background'} = [\@bg,'background','Background',NORMAL_BG];
+   $specs->{'-background'} = [\@bg,'background','Background',undef];
   }
  unless (exists($specs->{'-foreground'}))
   {
    Tk::catch { $cw->Tk::cget('-foreground') };
    my (@fg) = $@ ? ('PASSIVE') : ('SELF');
    push(@fg,'CHILDREN') if $child;
-   $specs->{'-foreground'} = [\@fg,'foreground','Foreground',BLACK];
+   $specs->{'-foreground'} = [\@fg,'foreground','Foreground',undef];
   }
  $cw->ConfigAlias(-fg => '-foreground', -bg => '-background');
 

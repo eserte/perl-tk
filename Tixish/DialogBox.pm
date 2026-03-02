@@ -79,7 +79,7 @@ sub Populate {
 	warn "Cancel button `$cancel_button' does not exist.\n";
     }
     $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ],
-                     -foreground => ['DESCENDANTS', 'foreground','Foreground', 'black'],
+                     -foreground => ['DESCENDANTS', 'foreground','Foreground',  undef],
                      -background => ['DESCENDANTS', 'background','Background',  undef],
 		     -focus	 => ['PASSIVE', undef, undef, undef],
 		     -showcommand => ['CALLBACK', undef, undef, undef],
