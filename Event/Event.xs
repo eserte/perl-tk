@@ -1532,7 +1532,7 @@ PROTOTYPES: DISABLE
 BOOT:
  {
 #ifdef pWARN_NONE
-  SV *old_warn = PL_curcop->cop_warnings;
+  void *old_warn = PL_curcop->cop_warnings;
   PL_curcop->cop_warnings = pWARN_NONE;
 #endif
   newXS("Tk::Event::INIT", XS_Tk__Event_INIT, file);
