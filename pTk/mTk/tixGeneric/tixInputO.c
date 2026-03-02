@@ -39,7 +39,7 @@ typedef struct Tix_InputOnlyStruct {
     int height;
 
     /* Cursor */
-    Cursor cursor;		/* Current cursor for window, or None. */
+    Tk_Cursor cursor;		/* Current cursor for window, or None. */
     int changed;
 } Tix_InputOnly;
 

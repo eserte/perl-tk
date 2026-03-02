@@ -164,7 +164,7 @@ typedef struct HListStruct {
     GC anchorGC;		/* GC for drawing dotted anchor highlight. */
     GC dropSiteGC;		/* GC for drawing dotted anchor highlight. */
 
-    Cursor cursor;		/* Current cursor for window, or None. */
+    Tk_Cursor cursor;		/* Current cursor for window, or None. */
 
     int topPixel;		/* Vertical offset */
     int leftPixel;		/* Horizontal offset */
