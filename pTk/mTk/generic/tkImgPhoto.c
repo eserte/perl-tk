@@ -676,10 +676,9 @@ ImgPhotoCmd(clientData, interp, objc, objv)
     XColor color;
     Tk_PhotoImageFormat *imageFormat;
     int imageWidth, imageHeight;
-    int matched;
+    int length, matched;
     Tcl_Channel chan;
     Tk_PhotoHandle srcHandle;
-    size_t length;
     Tcl_Obj *obj;
     int c;
     ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
@@ -723,7 +722,7 @@ ImgPhotoCmd(clientData, interp, objc, objv)
 	    Tcl_WrongNumArgs(interp, 2, objv, "option");
 	    return TCL_ERROR;
 	}
-	arg = Tcl_GetStringFromObj(objv[2], (int *) &length);
+	arg = Tcl_GetStringFromObj(objv[2], &length);
 	if (strncmp(arg,"-data", length) == 0) {
 	    if (masterPtr->dataString) {
 		Tcl_SetObjResult(interp, masterPtr->dataString);
@@ -768,7 +767,7 @@ ImgPhotoCmd(clientData, interp, objc, objv)
 	    return TCL_OK;
 	}
 	if (objc == 3) {
-	    char *arg = Tcl_GetStringFromObj(objv[2], (int *) &length);
+	    char *arg = Tcl_GetStringFromObj(objv[2], &length);
 	    if (!strncmp(arg, "-data", length)) {
 		Tcl_Obj *subobj = Tcl_NewStringObj("-data {} {} {}", 14);
 		if (masterPtr->dataString) {
@@ -5753,8 +5752,8 @@ PhotoOptionFind(interp, obj)
     Tcl_Interp *interp;         /* Interpreter that is being deleted. */
     Tcl_Obj *obj;                       /* Name of option to be found. */
 {
-    size_t length;
-    char *name = Tcl_GetStringFromObj(obj, (int *) &length);
+    int length;
+    char *name = Tcl_GetStringFromObj(obj, &length);
     OptionAssocData *list;
     char *prevname = NULL;
     Tcl_ObjCmdProc *proc = (Tcl_ObjCmdProc *) NULL;
