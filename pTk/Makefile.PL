@@ -15,7 +15,8 @@ Tk::MMutil::TkExtMakefile(
     'DEFINE'	=> $define,
     'INC'	=> "$inc -I. -Ibitmaps",
     'SKIP'	=> [qw( distclean dist makeaperl xs_o)],
-    'clean'	=> {'FILES' => 'libpTk$(LIB_EXT)'}
+    'clean'	=> {'FILES' => 'libpTk$(LIB_EXT)'},
+    CCCDLFLAGS   => "$Config{cccdlflags} -DNeedWidePrototypes=1",
 );
 
 sub MY::top_targets {
@@ -281,8 +282,3 @@ config :: Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t \
 
 ';
 }
-
-
-
-
-
