@@ -9,6 +9,7 @@
 
 use strict;
 use Tk;
+use Data::Dump qw(dd pp);
 
 BEGIN {
     if (!eval q{
@@ -21,6 +22,7 @@ BEGIN {
 }
 
 plan tests => 11;
+#plan tests => 13;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -58,6 +60,7 @@ $mw->geometry("+10+10");
     # XXX untie attempted while 3 inner references still exist
     untie *FH;
     $t->destroy;
+    pp $t;
 }
 
 {
@@ -69,6 +72,7 @@ $mw->geometry("+10+10");
     # XXX untie attempted while 3 inner references still exist
     untie *FH;
     $t->destroy;
+    pp $t;
 }
 
 {
@@ -81,4 +85,36 @@ $mw->geometry("+10+10");
     $t->destroy;
 }
 
+#{
+#my $mw2 = MainWindow->new;
+#$mw2->geometry("+10+10");
+#
+#{
+#    my $t = $mw2->Text(qw(-width 20 -height 10))->pack;
+#    tie *FH, ref $t, $t
+#	or die $!;
+#
+#    print FH "Hello Text World!\n";
+#    printf FH "formatted: %s\n", "string";
+#    syswrite FH, "toto\n", 3, 2;
+#
+#    is($t->Contents, "Hello Text World!\nformatted: string\nto\n", "tied handle and Contents()");
+#    # XXX untie attempted while 3 inner references still exist
+#    untie *FH;
+#    $t->destroy;
+#    pp $t;
+#}
+#
+#{
+#    my $t = $mw2->Scrolled(qw(Text -width 20 -height 10))->pack;
+#    tie *FH, 'Tk::Text', $t
+#	or die $!;
+#    print FH "Scrolled\n";
+#    is($t->Contents, "Scrolled\n", "tied handle on scrolled Text widget");
+#    # XXX untie attempted while 3 inner references still exist
+#    untie *FH;
+#    $t->destroy;
+#    pp $t;
+#}
+#}
 __END__
