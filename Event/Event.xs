@@ -1151,7 +1151,7 @@ XS(XS_Tk__Callback_Call)
  int count;
  SV *cb = ST(0);
  SV *err;
- int wantarray = GIMME;
+ int wantarray = GIMME_V;
  if (!items)
   {
    croak("No arguments");
@@ -1168,7 +1168,7 @@ XS(XS_Tk__Callback_Call)
   }
  PUTBACK;
 
- count = LangCallCallback(cb,GIMME|G_EVAL);
+ count = LangCallCallback(cb,GIMME_V|G_EVAL);
  SPAGAIN;
 
  err = ERRSV;
