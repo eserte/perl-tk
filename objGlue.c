@@ -627,7 +627,10 @@ Tcl_GetByteArrayFromObj(Tcl_Obj * objPtr, int * lengthPtr)
  sv_utf8_downgrade(objPtr, 0);
  if (lengthPtr)
   {
-   return (unsigned char *) SvPV(objPtr, *lengthPtr);
+   STRLEN len;
+   unsigned char *s = SvPV(objPtr, len);
+   *lengthPtr = len;
+   return s;
   }
  else
   {

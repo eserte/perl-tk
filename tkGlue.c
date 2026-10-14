@@ -5249,6 +5249,7 @@ do_comp(pTHX_ CV *cv)
  dMARK;
  dAX;
  struct WrappedRegExp *p = (struct WrappedRegExp *) CvXSUBANY(cv).any_ptr;
+#define USE_PREGCOMP_31027 1
 #if USE_PREGCOMP_31027
  p->pat = pregcomp(p->source,p->flags);
 #else /* USE_PREGCOMP_31027 */
@@ -5549,7 +5550,7 @@ _((pTHX))
 #define COP_WARNINGS_TYPE SV*
 #endif
 #ifdef pWARN_NONE
- COP_WARNINGS_TYPE old_warn = PL_curcop->cop_warnings;
+ char * old_warn = PL_curcop->cop_warnings;
  PL_curcop->cop_warnings = pWARN_NONE;
 #endif
 

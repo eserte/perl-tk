@@ -1083,6 +1083,8 @@ int x;
 int y;
 int width;
 int height;
+int imgWidth;
+int imgHeight;
 {
     Tk_Tile tile = (Tk_Tile) clientData;
     Tk_TileChange *handler;
