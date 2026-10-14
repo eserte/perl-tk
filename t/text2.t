@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-plan tests => 11;
+plan tests => 13;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -55,8 +55,17 @@ $mw->geometry("+10+10");
     syswrite FH, "toto\n", 3, 2;
 
     is($t->Contents, "Hello Text World!\nformatted: string\nto\n", "tied handle and Contents()");
-    # XXX untie attempted while 3 inner references still exist
-    untie *FH;
+    {
+        use warnings;
+        my $warn = 0;
+        local $SIG{__WARN__} = sub { $warn++ };
+        # XXX untie attempted while 3 inner references still exist
+        untie *FH;
+        TODO: {
+            local $TODO = 'cause of remaining inner references not yet diagnosed';
+            is $warn, 0, "No warnings about remaining inner references after untie";
+        }
+    }
     $t->destroy;
 }
 
@@ -66,8 +75,17 @@ $mw->geometry("+10+10");
 	or die $!;
     print FH "Scrolled\n";
     is($t->Contents, "Scrolled\n", "tied handle on scrolled Text widget");
-    # XXX untie attempted while 3 inner references still exist
-    untie *FH;
+    {
+        use warnings;
+        my $warn = 0;
+        local $SIG{__WARN__} = sub { $warn++ };
+        # XXX untie attempted while 3 inner references still exist
+        untie *FH;
+        TODO: {
+            local $TODO = 'cause of remaining inner references not yet diagnosed';
+            is $warn, 0, "No warnings about remaining inner references after untie";
+        }
+    }
     $t->destroy;
 }
 
