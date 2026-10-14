@@ -954,7 +954,7 @@ the given ranges due to text shifted during deletion.
 
 Delete the currently selected text.
 
-=item I<$text>-E<gt>B<deleteTextTaggedWith>(I<tag>)
+=item I<$text>-E<gt>B<DeleteTextTaggedWith>(I<tag>)
 
 Delete the text tagged with the I<tag> parameter.
 
