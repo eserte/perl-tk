@@ -5543,13 +5543,8 @@ _((pTHX))
  char *XEventMethods = "abcdfhkmopstvwxyABDEKNRSTWXY#";
  char buf[128];
  CV *cv;
-#if PERL_REVISION > 5 || (PERL_REVISION == 5 && PERL_VERSION >= 9)
-#define COP_WARNINGS_TYPE STRLEN*
-#else
-#define COP_WARNINGS_TYPE SV*
-#endif
 #ifdef pWARN_NONE
- COP_WARNINGS_TYPE old_warn = PL_curcop->cop_warnings;
+ void *old_warn = PL_curcop->cop_warnings;
  PL_curcop->cop_warnings = pWARN_NONE;
 #endif
 
