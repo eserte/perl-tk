@@ -4,5 +4,5 @@
 
 int main() {
     SV* sv = newSViv(0);
-    regexp* rx = pregcomp(sv, 0);
+    void* rx = pregcomp(sv, 0);
 }
