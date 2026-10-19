@@ -493,8 +493,7 @@ CreateFrame(clientData, interp, objc, objv, type, appName)
     CONST char *className, *screenName, *colormapName, *arg;
     Tcl_Obj *visualName;
     Tcl_Obj *useOption;
-    int i, c, depth;
-    size_t length;
+    int i, c, depth, length;
     unsigned int mask;
     Colormap colormap;
     Visual *visual;
@@ -523,7 +522,7 @@ CreateFrame(clientData, interp, objc, objv, type, appName)
     visualName = NULL;
     colormap = None;
     for (i = 2; i < objc; i += 2) {
-	arg = Tcl_GetStringFromObj(objv[i], (int *) &length);
+	arg = Tcl_GetStringFromObj(objv[i], &length);
 	if (length < 2) {
 	    continue;
 	}
@@ -749,8 +748,7 @@ FrameWidgetObjCmd(clientData, interp, objc, objv)
     };
     register Frame *framePtr = (Frame *) clientData;
     int result = TCL_OK, index;
-    size_t length;
-    int c, i;
+    int c, i, length;
     Tcl_Obj *objPtr;
 
     if (objc < 2) {
@@ -798,7 +796,7 @@ FrameWidgetObjCmd(clientData, interp, objc, objv)
 	     */
 
 	    for (i = 2; i < objc; i++) {
-		char *arg = Tcl_GetStringFromObj(objv[i], (int *) &length);
+		char *arg = Tcl_GetStringFromObj(objv[i], &length);
 		if (length < 2) {
 		    continue;
 		}
