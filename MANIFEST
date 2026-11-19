@@ -2014,6 +2014,7 @@ t/msgbox.t
 t/mwm.t
 t/notebook.t
 t/objglue.t
+t/option-lifetime.t
 t/optmenu.t
 t/photo.t
 t/pixmap.t

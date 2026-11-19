@@ -25,6 +25,8 @@
 #define __NO_OLD_CONFIG
 #endif
 
+#include <stdint.h>
+
 #include "tk.h"
 #include "tkInt.h"
 #include "tkPort.h"
@@ -39,6 +41,14 @@
  */
 
 #define OPTION_HASH_KEY "TkOptionTable"
+
+/*
+ * Cache keys must identify table lifetimes, not allocator addresses.  Zero
+ * disables caching after the unsigned counter wraps, so keys are never reused.
+ */
+
+static uintptr_t nextOptionTableSerial = 1;
+TCL_DECLARE_MUTEX(optionTableMutex)
 
 /*
  * The following two structures are used along with Tk_OptionSpec
@@ -91,6 +101,7 @@ typedef struct TkOption {
  */
 
 typedef struct OptionTable {
+    uintptr_t serial;                   /* Cache key; zero if exhausted. */
     int refCount;			/* Counts the number of uses of this
 					 * table (the number of times
 					 * Tk_CreateOptionTable has returned
@@ -141,8 +152,9 @@ static int		SetOptionFromAny _ANSI_ARGS_((Tcl_Interp *interp,
 /*
  * The structure below defines an object type that is used to cache the
  * result of looking up an option name.  If an object has this type, then
- * its internalPtr1 field points to the OptionTable in which it was looked up,
- * and the internalPtr2 field points to the entry that matched.
+ * its internalPtr1 field holds the serial of the OptionTable in which it was
+ * looked up, and the internalPtr2 field points to the entry that matched.
+ * A serial is never reused, even if both table and interpreter addresses are.
  */
 
 Tcl_ObjType tkOptionObjType = {
@@ -230,6 +242,12 @@ Tk_CreateOptionTable(interp, templatePtr)
     }
     tablePtr = (OptionTable *) (ckalloc(sizeof(OptionTable)
 	    + ((numOptions - 1)  * sizeof(Option))));
+    Tcl_MutexLock(&optionTableMutex);
+    tablePtr->serial = nextOptionTableSerial;
+    if (nextOptionTableSerial != 0) {
+        nextOptionTableSerial++;
+    }
+    Tcl_MutexUnlock(&optionTableMutex);
     tablePtr->refCount = 1;
     tablePtr->hashEntryPtr = hashEntryPtr;
     tablePtr->nextPtr = NULL;
@@ -1210,8 +1228,8 @@ GetOptionFromObj(interp, objPtr, tablePtr)
      * First, check to see if the object already has the answer cached.
      */
 
-    if (objPtr->typePtr == &tkOptionObjType) {
-        if (objPtr->internalRep.twoPtrValue.ptr1 == (VOID *) tablePtr) {
+    if (tablePtr->serial != 0 && objPtr->typePtr == &tkOptionObjType) {
+        if (objPtr->internalRep.twoPtrValue.ptr1 == (VOID *) tablePtr->serial) {
             return (Option *) objPtr->internalRep.twoPtrValue.ptr2;
         }
     }
@@ -1230,7 +1248,7 @@ GetOptionFromObj(interp, objPtr, tablePtr)
 	    && (objPtr->typePtr->freeIntRepProc != NULL)) {
 	objPtr->typePtr->freeIntRepProc(objPtr);
     }
-    objPtr->internalRep.twoPtrValue.ptr1 = (VOID *) tablePtr;
+    objPtr->internalRep.twoPtrValue.ptr1 = (VOID *) tablePtr->serial;
     objPtr->internalRep.twoPtrValue.ptr2 = (VOID *) bestPtr;
     TclObjSetType(objPtr,&tkOptionObjType);
     return bestPtr;
