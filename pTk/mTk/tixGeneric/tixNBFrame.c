@@ -79,7 +79,7 @@ typedef struct NoteBookFrameStruct {
 				 * this GC is used to stipple background
 				 * across it.*/
 
-     Cursor cursor;		/* Current cursor for window, or None. */
+    Tk_Cursor cursor;		/* Current cursor for window, or None. */
 
     struct _Tab * tabHead;
     struct _Tab * tabTail;
