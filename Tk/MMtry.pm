@@ -11,47 +11,43 @@ $VERSION = '4.011';
 
 use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);
+use warnings;
 use strict;
 use File::Basename;
 use File::Spec;
 
-my $stderr_too = ($^O eq 'MSWin32') ? '' : '2>&1';
+my $CONSUME_STDERR  = ($^O eq 'MSWin32') ? '' : '2>&1';
+my $SUPPRESS_STDERR = ($^O eq 'MSWin32') ? '' : '2>/dev/null';
 
 sub try_compile
 {
- my ($file,$inc,$lib,$def)  = @_;
- $inc ||= [];
- $lib ||= [];
- $def ||= [];
- my $stderr_too = $VERBOSE ? '' : $stderr_too;
- my $out   = basename($file,'.c').$Config{'exe_ext'};
- warn "Test Compiling $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def $stderr_too`;
- my $ok = ($? == 0);
- warn "$msgs\n" if $VERBOSE && $msgs;
- unlink($out) if (-f $out);
- return $ok;
+ return _do_try(0, @_);
 }
 
 sub try_run
 {
- my ($file,$inc,$lib,$def)  = @_;
+ return _do_try(1, @_);
+}
+
+sub _do_try
+{
+ my ($do_run,$file,$inc,$lib,$def)  = @_;
  $inc ||= [];
  $lib ||= [];
  $def ||= [];
- my $stderr_too = $VERBOSE ? '' : $stderr_too;
+ my $stderr_too = $VERBOSE ? $CONSUME_STDERR : $SUPPRESS_STDERR;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
- warn "Test Compile/Run $file\n";
+ warn $do_run ? "Test Compile/Run $file\n" : "Test Compiling $file\n";
  my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def";
  my $msgs  = `$cmdline $stderr_too`;
  my $ok = ($? == 0);
- warn "$cmdline:\n$msgs\n" if $VERBOSE && $msgs;
- if ($ok)
+ warn "$cmdline\n$msgs" if $VERBOSE;
+ if ($do_run and $ok)
   {
    my $path = File::Spec->rel2abs($out);
    $msgs = `$path $stderr_too`;
    $ok = ($? == 0);
-   warn "$path:$msgs\n" if $VERBOSE && $msgs;
+   warn "$path\n$msgs" if $VERBOSE;
   }
  unlink($out) if (-f $out);
  return $ok;
