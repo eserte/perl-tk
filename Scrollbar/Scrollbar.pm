@@ -66,14 +66,13 @@ sub ClassInit
  $mw->bind($class, '<Next>',          ['ScrlByPages','hv', 1]);
 
  # X11 mousewheel - honour for horizontal too.
- $mw->bind($class, '<4>',             ['ScrlByUnits','hv',-5]);
- $mw->bind($class, '<5>',             ['ScrlByUnits','hv', 5]);
+ $mw->bind($class, '<Shift-4>',       ['ScrlByUnits','hv',-5]);
+ $mw->bind($class, '<Shift-5>',       ['ScrlByUnits','hv', 5]);
+ $mw->bind($class, '<Button-6>',      ['ScrlByUnits','hv',-5]);
+ $mw->bind($class, '<Button-7>',      ['ScrlByUnits','hv', 5]);
 
  $mw->bind($class, '<Home>',          ['ScrlToPos', 0]);
  $mw->bind($class, '<End>',           ['ScrlToPos', 1]);
-
- $mw->bind($class, '<4>',             ['ScrlByUnits','v',-3]);
- $mw->bind($class, '<5>',             ['ScrlByUnits','v', 3]);
 
  return $class;
 
