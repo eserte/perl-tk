@@ -29,6 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include "tkInt.h"
 
 static Window TryChildren();
 
@@ -47,17 +48,30 @@ Window XmuClientWindow (dpy, win)
     unsigned long nitems, after;
     unsigned char *data;
     Window inf;
+    Tk_ErrorHandler handler;
 
     WM_STATE = XInternAtom(dpy, "WM_STATE", True);
     if (!WM_STATE)
 	return win;
+
+    /*
+     * Ignore X errors when reading the property.
+     * Sometimes (difficult to reproduce) we were called for a
+     * ClientMessage{window=0x1}.
+     */
+
+    handler = Tk_CreateErrorHandler(dpy, -1, -1, -1, (Tk_ErrorProc *) NULL, (ClientData) NULL);
     XGetWindowProperty(dpy, win, WM_STATE, 0, 0, False, AnyPropertyType,
 		       &type, &format, &nitems, &after, &data);
-    if (type)
-	return win;
-    inf = TryChildren(dpy, win, WM_STATE);
-    if (!inf)
+    if (type) {
 	inf = win;
+    } else {
+        inf = TryChildren(dpy, win, WM_STATE);
+        if (!inf)
+            inf = win;
+    }
+
+    Tk_DeleteErrorHandler(handler);
     return inf;
 #endif
 }
