@@ -121,6 +121,7 @@ while ($_ = &getline)
   s/\bpanic\b/Tcl_Panic/g;
 
   s/\b(\w+Ptr)->internalRep\./TclObjInternal($1)->/g;
+  s/\b(\w+Ptr)->internalRep\b/(*TclObjInternal($1))/g;
 
   s/(\w+bjPtr)->typePtr\s*=\s*(.*);/TclObjSetType($1,$2);/g;
 
